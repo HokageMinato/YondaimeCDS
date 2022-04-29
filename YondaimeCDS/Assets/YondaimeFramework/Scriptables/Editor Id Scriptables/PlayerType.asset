@@ -1,0 +1,25 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: -1859464208, guid: c4e63192b2f00aa44805e839785aa5f2, type: 3}
+  m_Name: PlayerType
+  m_EditorClassIdentifier: 
+  ids:
+  - stringIdVal: Red
+    intValue: -706463506
+  - stringIdVal: Green
+    intValue: 1786872531
+  - stringIdVal: Blue
+    intValue: -907111275
+  - stringIdVal: Yellow
+    intValue: -1831999919
+  myRuntimeIdContainers:
+  - {fileID: 11400000, guid: 4d2e87b8e2195874aafaafe2b6f8afac, type: 2}

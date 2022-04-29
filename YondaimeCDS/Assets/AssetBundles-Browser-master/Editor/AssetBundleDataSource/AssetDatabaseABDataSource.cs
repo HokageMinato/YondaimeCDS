@@ -3,10 +3,11 @@ using UnityEngine;
 using UnityEditor;
 using UnityEngine.Assertions;
 using System.Collections.Generic;
+using UnityEditor.Build.Pipeline;
 using System.Linq;
 using UnityEditor.IMGUI.Controls;
-using UnityEditor.Build.Pipeline;
-using UnityEngine.Build.Pipeline;
+using UnityEditor.Build.Content;
+using System.IO;
 
 namespace AssetBundleBrowser.AssetBundleDataSource
 {
@@ -82,19 +83,36 @@ namespace AssetBundleBrowser.AssetBundleDataSource
         public bool BuildAssetBundles (ABBuildInfo info) {
             if(info == null)
             {
-                Debug.Log("Error in info ");
+                Debug.Log("Error in build");
                 return false;
             }
-            
-            CompatibilityAssetBundleManifest buildManifest = CompatibilityBuildPipeline.BuildAssetBundles(info.outputDirectory, info.options, info.buildTarget);
-            
+
+            var bundles = ContentBuildInterface.GenerateAssetBundleBuilds();
+            for (var i = 0; i < bundles.Length; i++)
+            {
+                string[] names = bundles[i].assetNames.Select(Path.GetFileNameWithoutExtension).ToArray();
+                bundles[i].addressableNames = names;
+
+            }
+
+
+            var buildManifest = CompatibilityBuildPipeline.BuildAssetBundles(info.outputDirectory,bundles, info.options, info.buildTarget);
+
+
+
+
             if (buildManifest == null)
             {
                 Debug.Log("Error in build");
                 return false;
             }
+           
+            
 
-            foreach(var assetBundleName in buildManifest.GetAllAssetBundles())
+            
+
+
+            foreach (var assetBundleName in buildManifest.GetAllAssetBundles())
             {
                 if (info.onBuild != null)
                 {
