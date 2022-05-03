@@ -43,13 +43,15 @@ namespace AssetBundleBrowser
 
         [SerializeField]
         internal AssetBundleInspectTab m_InspectTab;
+        
 
         private Texture2D m_RefreshTexture;
 
         const float k_ToolbarPadding = 15;
         const float k_MenubarPadding = 32;
 
-        [MenuItem("Window/AssetBundle Browser", priority = 2050)]
+        
+        [MenuItem("YondaimeCDS/BundleBrowser")]
         static void ShowWindow()
         {
             s_instance = null;
@@ -158,6 +160,8 @@ namespace AssetBundleBrowser
                     m_InspectTab.OnGUI(GetSubWindowArea());
                     break;
                 case Mode.Browser:
+                    m_ManageTab.OnGUI(GetSubWindowArea());
+                    break;
                 default:
                     m_ManageTab.OnGUI(GetSubWindowArea());
                     break;
@@ -188,7 +192,7 @@ namespace AssetBundleBrowser
 
             float toolbarWidth = position.width - k_ToolbarPadding * 4 - m_RefreshTexture.width;
             //string[] labels = new string[2] { "Configure", "Build"};
-            string[] labels = new string[3] { "Configure", "Build", "Inspect" };
+            string[] labels = new string[4] { "Configure", "Build", "Inspect","URI"};
             m_Mode = (Mode)GUILayout.Toolbar((int)m_Mode, labels, "LargeButton", GUILayout.Width(toolbarWidth) );
             GUILayout.FlexibleSpace();
             GUILayout.EndHorizontal();
