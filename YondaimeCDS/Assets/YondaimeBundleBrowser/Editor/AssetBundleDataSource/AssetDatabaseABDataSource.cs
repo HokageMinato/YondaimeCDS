@@ -4,12 +4,8 @@ using System.Collections.Generic;
 using UnityEditor.Build.Pipeline;
 using UnityEngine.Build.Pipeline;
 using System.Linq;
-using System.Text;
 using UnityEditor.Build.Content;
 using System.IO;
-using System.Security.Cryptography;
-using YondaimeCDS;
-using System;
 
 namespace AssetBundleBrowser.AssetBundleDataSource
 {
@@ -83,12 +79,12 @@ namespace AssetBundleBrowser.AssetBundleDataSource
         }
 
         public bool BuildAssetBundles (ABBuildInfo info) {
+            
             if(info == null)
             {
                 Debug.Log("Error in build");
                 return false;
             }
-
 
 
             AssetBundleBuild[] bundles = ContentBuildInterface.GenerateAssetBundleBuilds();
@@ -98,26 +94,18 @@ namespace AssetBundleBrowser.AssetBundleDataSource
                 bundles[i].addressableNames = names;
             }
 
+
+
             CompatibilityAssetBundleManifest buildManifest = CompatibilityBuildPipeline.BuildAssetBundles(info.outputDirectory,bundles, info.options, info.buildTarget);
-           
+
             if (buildManifest == null)
             {
                 Debug.Log("Error in build");
                 return false;
             }
 
-            string manifestJSON = IOUtils.Serialize(buildManifest);
-            string manifestHash = ComputeHash(IOUtils.StringToBytes(manifestJSON));
-            manifestJSON+=(manifestHash);
+            ManifestGenerator.GenerateAssetManifest(buildManifest, info.outputDirectory);
            
-            byte[] manifestData = IOUtils.StringToBytes(manifestJSON);
-            byte[] hashData = IOUtils.StringToBytes(manifestHash);
-
-            string outputDirectory = info.outputDirectory;
-
-            File.WriteAllBytes(Path.Combine(outputDirectory, "manifest"),manifestData);
-            File.WriteAllBytes(Path.Combine(outputDirectory, "manifestHash"),hashData);
-
 
             foreach (var assetBundleName in buildManifest.GetAllAssetBundles())
             {
@@ -129,11 +117,7 @@ namespace AssetBundleBrowser.AssetBundleDataSource
             return true;
         }
 
-        private string ComputeHash(byte[] data) 
-        {
-            string hash = BitConverter.ToString(IOUtils.ToMD5(data));
-            return hash.Replace("-",string.Empty);
-        }
+        
 
     }
 }

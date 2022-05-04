@@ -7,6 +7,9 @@ namespace YondaimeCDS {
 
     public class IOUtils
     {
+        public const string MANIFEST = "manifest";
+        public const string MANIFEST_HASH = "manifestHash";
+
         public static void CreateMissingDirectory(string path)
         {
             if (IsDirectoryMissing(path))

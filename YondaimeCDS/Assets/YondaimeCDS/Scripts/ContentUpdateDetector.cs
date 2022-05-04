@@ -9,8 +9,8 @@ namespace YondaimeCDS {
     public class ContentUpdateDetector 
     {
 
-        private const string MANIFEST = "manifest";
-        private const string MANIFEST_HASH = "manifestHash";
+        private static string MANIFEST_HASH { get { return IOUtils.MANIFEST_HASH; } }
+        private static string MANIFEST { get { return IOUtils.MANIFEST; } }
 
         DownloaderConfig _downloaderConfig;
        

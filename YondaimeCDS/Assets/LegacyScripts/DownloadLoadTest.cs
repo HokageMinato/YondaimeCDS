@@ -1,13 +1,14 @@
 using YondaimeFramework;
 using UnityEngine;
 using System.Collections;
-using UnityEngine.Networking;
 using System.IO;
 using System;
 using System.Net.Http;
 using YondaimeCDS;
 using System.Threading.Tasks;
 using UnityEngine.UI;
+using UnityEditor;
+using System.Collections.Generic;
 
 public class DownloadLoadTest : CustomBehaviour
 {
@@ -16,7 +17,7 @@ public class DownloadLoadTest : CustomBehaviour
     private static readonly HttpClient client = new HttpClient();
     public DownloaderConfig downloaderConfig;
     public Image progressbar;
-
+    
     void Start()
     {
         path = Application.persistentDataPath;
@@ -122,4 +123,73 @@ public class DownloadLoadTest : CustomBehaviour
             Debug.LogError(e.Message);
         }
     }
+
+    [ContextMenu("Test")]
+    public void ListAllNames() 
+    {
+        GenerateScriptManifest();
+    }
+
+    public GameObject Go;
+
+    public void GenerateScriptManifest()
+    {
+
+        string[] assetBundles = AssetDatabase.GetAllAssetBundleNames();
+        for (int i = 0; i < assetBundles.Length; i++)
+        {
+            string[] assetPaths = AssetDatabase.GetAssetPathsFromAssetBundle(assetBundles[i]);
+            for (int j = 0; j < assetPaths.Length; j++)
+            {
+                List<string> scriptDependencies = GetScriptDependenciesOf(assetPaths[j]);
+                GenerateScriptHashOfScriptDepencendies(scriptDependencies,assetBundles[i]);
+            }
+
+        }
+        
+       
+
+        List<string> GetScriptDependenciesOf(string assetPath) 
+        {
+            List<string> deps = new List<string>();
+            string[] asset = AssetDatabase.GetDependencies(assetPath);
+
+            for (int i = 0; i < asset.Length; i++) 
+            {
+                if (asset[i].Contains(".cs"))
+                {
+                    deps.Add(asset[i]);
+                }
+            }
+
+            return deps;
+
+        }
+
+        string GenerateScriptHashOfScriptDepencendies(List<string> scriptDependencies,string bundleName) 
+        {
+            string scriptDep = "";
+            foreach (string scriptDependency in scriptDependencies)
+            {
+                scriptDep += GetContentOfScript(scriptDependency) + "\n";
+            }
+            Debug.Log(bundleName+"\n"+ scriptDep);
+
+            scriptDep = scriptDep.Replace(" ", string.Empty);
+            scriptDep = scriptDep.Replace("\n", string.Empty);
+
+            byte[] scriptHash = IOUtils.ToMD5(IOUtils.StringToBytes(scriptDep));
+
+            Debug.Log($"Hash for {bundleName} -> {BitConverter.ToString(scriptHash)}");
+
+            return "";
+        }
+
+        string GetContentOfScript(string scriptPath)
+        {
+            return AssetDatabase.LoadAssetAtPath<MonoScript>(scriptPath).text;
+        }
+
+    }
+
 }
