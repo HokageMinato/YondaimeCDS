@@ -9,6 +9,8 @@ namespace YondaimeCDS
     public static class Downloader
     {
         private static DownloaderConfig config;
+        private const string CONTENTKEY = "$030452244";
+        //public static bool LatestContentDownloaded { get { return PlayerPrefs.GetInt(CONTENTKEY, 0) == 1; } set { PlayerPrefs.SetInt(CONTENTKEY, (value) ? 1 : 0); } }
 
         public static void Initialize(DownloaderConfig downloaderConfig) 
         { 

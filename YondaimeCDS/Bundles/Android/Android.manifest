@@ -3,13 +3,13 @@ CompatibilityAssetBundleManifest:
   AssetBundleInfos:
     Info_0:
       Name: content1
-      Hash: 0a90110684e615019974bc57fdab1dfd
-      CRC: 228434803
+      Hash: c1de60943de4614a6e2a371e16550397
+      CRC: 1433383557
       Dependencies: {}
     Info_1:
       Name: content2
-      Hash: ec63120b16515a3f82306bb0ec48829a
-      CRC: 158724539
+      Hash: 4b63ee119b5e36912224952545ddaa47
+      CRC: 3496703399
       Dependencies: {}
     Info_2:
       Name: content 3

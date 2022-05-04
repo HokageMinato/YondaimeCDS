@@ -41,15 +41,15 @@ public class DownloadLoadTest : CustomBehaviour
     {
         //Task downloadTask = Downloader.DownloadBundle("w2r2",amount => { progressbar.fillAmount = amount; });
         
-        Task downloadTask = Downloader.CheckForContentUpdate();
+        Task<bool> downloadTask = Downloader.CheckForContentUpdate();
 
         while (!downloadTask.IsCompleted)
         {
-
             yield return null;
         }
 
-        Debug.Log("ed2");
+
+        Debug.Log($"ed2 {downloadTask.Result}");
 
     }
 

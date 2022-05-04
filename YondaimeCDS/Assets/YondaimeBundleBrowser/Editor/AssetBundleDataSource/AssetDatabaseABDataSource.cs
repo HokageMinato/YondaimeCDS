@@ -1,13 +1,15 @@
-﻿using System;
-using UnityEngine;
+﻿using UnityEngine;
 using UnityEditor;
-using UnityEngine.Assertions;
 using System.Collections.Generic;
 using UnityEditor.Build.Pipeline;
+using UnityEngine.Build.Pipeline;
 using System.Linq;
-using UnityEditor.IMGUI.Controls;
+using System.Text;
 using UnityEditor.Build.Content;
 using System.IO;
+using System.Security.Cryptography;
+using YondaimeCDS;
+using System;
 
 namespace AssetBundleBrowser.AssetBundleDataSource
 {
@@ -87,29 +89,34 @@ namespace AssetBundleBrowser.AssetBundleDataSource
                 return false;
             }
 
-            var bundles = ContentBuildInterface.GenerateAssetBundleBuilds();
+
+
+            AssetBundleBuild[] bundles = ContentBuildInterface.GenerateAssetBundleBuilds();
             for (var i = 0; i < bundles.Length; i++)
             {
                 string[] names = bundles[i].assetNames.Select(Path.GetFileNameWithoutExtension).ToArray();
                 bundles[i].addressableNames = names;
-
             }
 
-
-            var buildManifest = CompatibilityBuildPipeline.BuildAssetBundles(info.outputDirectory,bundles, info.options, info.buildTarget);
-
-
-
-
+            CompatibilityAssetBundleManifest buildManifest = CompatibilityBuildPipeline.BuildAssetBundles(info.outputDirectory,bundles, info.options, info.buildTarget);
+           
             if (buildManifest == null)
             {
                 Debug.Log("Error in build");
                 return false;
             }
-           
-            
 
-            
+            string manifestJSON = IOUtils.Serialize(buildManifest);
+            string manifestHash = ComputeHash(IOUtils.StringToBytes(manifestJSON));
+            manifestJSON+=(manifestHash);
+           
+            byte[] manifestData = IOUtils.StringToBytes(manifestJSON);
+            byte[] hashData = IOUtils.StringToBytes(manifestHash);
+
+            string outputDirectory = info.outputDirectory;
+
+            File.WriteAllBytes(Path.Combine(outputDirectory, "manifest"),manifestData);
+            File.WriteAllBytes(Path.Combine(outputDirectory, "manifestHash"),hashData);
 
 
             foreach (var assetBundleName in buildManifest.GetAllAssetBundles())
@@ -121,5 +128,12 @@ namespace AssetBundleBrowser.AssetBundleDataSource
             }
             return true;
         }
+
+        private string ComputeHash(byte[] data) 
+        {
+            string hash = BitConverter.ToString(IOUtils.ToMD5(data));
+            return hash.Replace("-",string.Empty);
+        }
+
     }
 }

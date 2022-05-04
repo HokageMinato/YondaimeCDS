@@ -5,48 +5,72 @@ using UnityEngine;
 
 namespace YondaimeCDS {
 
-    public class IOUtils : MonoBehaviour
+    public class IOUtils
     {
         public static void CreateMissingDirectory(string path)
+        {
+            if (IsDirectoryMissing(path))
             {
-                if (IsDirectoryMissing(path))
-                {
-                    Directory.CreateDirectory(path);
-                }
+                Directory.CreateDirectory(path);
             }
+        }
 
-            public static bool IsDirectoryMissing(string path)
+        public static bool IsDirectoryMissing(string path)
+        {
+            string directoryName = Path.GetDirectoryName(path);
+            return !Directory.Exists(directoryName);
+        }
+
+        public static void SaveBytesToDisk(string path, byte[] data)
+        {
+            try
             {
-                string directoryName = Path.GetDirectoryName(path);
-                return !Directory.Exists(directoryName);
+                File.WriteAllBytes(path, data);
             }
-
-            public static void SaveBytesToDisk(string path, byte[] data)
+            catch (Exception ex)
             {
-                try
-                {
-                    File.WriteAllBytes(path, data);
-                }
-                catch (Exception ex)
-                {
-                    Debug.Log(ex.Message);
-                }
+                Debug.Log(ex.Message);
             }
+        }
 
-            public static byte[] LoadBytesFromDisk(string path)
+        public static byte[] LoadBytesFromDisk(string path)
+        {
+            if (!File.Exists(path))
+                return null;
+
+            return File.ReadAllBytes(path);
+        }
+
+        public static string BytesToString(byte[] content)
+        {
+            return Encoding.UTF8.GetString(content);
+        }
+
+        public static byte[] StringToBytes(string data) 
+        {
+            return Encoding.UTF8.GetBytes(data);
+        }
+
+        public static T Deserialize<T>(string json)
+        {
+            return JsonUtility.FromJson<T>(json);
+        }
+        
+        public static string Serialize<T>(T obj)
+        {
+            return JsonUtility.ToJson(obj);
+        }
+
+
+        public static byte[] ToMD5(byte[] data)
+        {
+            // Use input string to calculate MD5 hash
+            using (System.Security.Cryptography.MD5 md5 = System.Security.Cryptography.MD5.Create())
             {
-                if (!File.Exists(path))
-                    return null;
-
-                return File.ReadAllBytes(path);
-            }
-
-            public static string BytesToUnicode(byte[] content)
-            {
-                return Encoding.UTF8.GetString(content);
+                return md5.ComputeHash(data);
             }
 
         }
-
+    }
 }
 
