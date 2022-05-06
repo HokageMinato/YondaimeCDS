@@ -10,8 +10,8 @@ using System.Security.Cryptography;
 public class ContentBuilder1 : MonoBehaviour
 {
     public SO so;
-    
 
+    private int somedeclarat;
     public const int ChangeLv = 4545;
 
     #if UNITY_EDITOR

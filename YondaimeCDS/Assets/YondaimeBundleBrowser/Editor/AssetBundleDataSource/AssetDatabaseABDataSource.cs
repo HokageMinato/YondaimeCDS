@@ -104,7 +104,7 @@ namespace AssetBundleBrowser.AssetBundleDataSource
                 return false;
             }
 
-            ManifestGenerator.GenerateAssetManifest(buildManifest, info.outputDirectory);
+            YondaimeCDS.ManifestGenerator.GenerateManifests(buildManifest, info.outputDirectory);
            
 
             foreach (var assetBundleName in buildManifest.GetAllAssetBundles())

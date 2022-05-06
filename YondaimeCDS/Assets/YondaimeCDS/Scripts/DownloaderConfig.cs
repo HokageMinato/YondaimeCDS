@@ -9,6 +9,8 @@ namespace YondaimeCDS
     {
         public string remoteURL;
         public string localStorageFolderName = string.Empty;
+        public LocalScriptManifest localScriptManifest;
+
         public string StoragePath
         {
             get

@@ -9,6 +9,7 @@ namespace YondaimeCDS {
     {
         public const string MANIFEST = "manifest";
         public const string MANIFEST_HASH = "manifestHash";
+        public const string SCRIPT_MANIFEST_HASH = "scriptManifest";
 
         public static void CreateMissingDirectory(string path)
         {

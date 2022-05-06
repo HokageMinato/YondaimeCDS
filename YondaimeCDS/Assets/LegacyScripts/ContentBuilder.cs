@@ -6,7 +6,6 @@ using UnityEditor;
 
 public class ContentBuilder : MonoBehaviour
 {
-
-    private int some1;
+    private int someChange;
 
 }

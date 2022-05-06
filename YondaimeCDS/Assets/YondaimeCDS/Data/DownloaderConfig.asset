@@ -14,3 +14,4 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   remoteURL: https://github.com/HokageMinato/YondaimeCDSContents/raw/main/
   localStorageFolderName: 
+  localScriptManifest: {fileID: 11400000, guid: af7be7b83d562e146b8d85b0c07956f9, type: 2}
