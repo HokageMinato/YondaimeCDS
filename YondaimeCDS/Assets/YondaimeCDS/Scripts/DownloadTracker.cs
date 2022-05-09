@@ -10,18 +10,12 @@ namespace YondaimeCDS
 
     public class DownloadTracker
     {
-        private DownloaderConfig _downloaderConfig;
 
-        public DownloadTracker(DownloaderConfig downloaderConfig) 
-        {    
-            _downloaderConfig = downloaderConfig;
-        }
-
-
+        
         public async Task<double> GetRemainingDownloadSize(string assetName) 
         { 
             double downloadedDataSize =  GetOnDiskDataSize(assetName);
-            double assetSize = await RequestBundleSize(Path.Combine(_downloaderConfig.remoteURL, assetName));
+            double assetSize = await RequestBundleSize(Path.Combine(Config.REMOTE_URL, assetName));
             if (assetSize == -1)
                 return assetSize;
 
@@ -32,7 +26,7 @@ namespace YondaimeCDS
 
         private double GetOnDiskDataSize(string assetName) 
         {
-            string path = Path.Combine(_downloaderConfig.StoragePath, assetName);
+            string path = Path.Combine(Config.STORAGE_PATH, assetName);
             if (!File.Exists(path))
                 return 0;
 

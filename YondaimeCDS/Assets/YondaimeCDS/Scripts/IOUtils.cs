@@ -7,44 +7,10 @@ namespace YondaimeCDS {
 
     public class IOUtils
     {
-        public const string MANIFEST = "manifest";
-        public const string MANIFEST_HASH = "manifestHash";
-        public const string SCRIPT_MANIFEST_HASH = "scriptManifest";
+        
 
-        public static void CreateMissingDirectory(string path)
-        {
-            if (IsDirectoryMissing(path))
-            {
-                Directory.CreateDirectory(path);
-            }
-        }
-
-        public static bool IsDirectoryMissing(string path)
-        {
-            string directoryName = Path.GetDirectoryName(path);
-            return !Directory.Exists(directoryName);
-        }
-
-        public static void SaveBytesToDisk(string path, byte[] data)
-        {
-            try
-            {
-                File.WriteAllBytes(path, data);
-            }
-            catch (Exception ex)
-            {
-                Debug.Log(ex.Message);
-            }
-        }
-
-        public static byte[] LoadBytesFromDisk(string path)
-        {
-            if (!File.Exists(path))
-                return null;
-
-            return File.ReadAllBytes(path);
-        }
-
+       
+       
         public static string BytesToString(byte[] content)
         {
             return Encoding.UTF8.GetString(content);
@@ -59,10 +25,24 @@ namespace YondaimeCDS {
         {
             return JsonUtility.FromJson<T>(json);
         }
-        
+
         public static string Serialize<T>(T obj)
         {
             return JsonUtility.ToJson(obj);
+        }
+
+
+        public static void SaveToLocalDisk(byte[] contentData, string contentName)
+        {
+            string fileName = Path.Combine(Config.STORAGE_PATH, contentName);
+            CreateMissingDirectory(fileName);
+            SaveBytesToDisk(fileName, contentData);
+        }
+
+        public static byte[] LoadFromLocalDisk(string contentName)
+        {
+            string filePath = Path.Combine(Config.STORAGE_PATH, contentName);
+            return LoadBytesFromDisk(filePath);
         }
 
 
@@ -73,8 +53,48 @@ namespace YondaimeCDS {
             {
                 return md5.ComputeHash(data);
             }
-
         }
+
+
+        #region PRIVATES
+        private static void CreateMissingDirectory(string path)
+        {
+            if (IsDirectoryMissing(path))
+            {
+                Directory.CreateDirectory(path);
+            }
+        }
+
+        private static bool IsDirectoryMissing(string path)
+        {
+            string directoryName = Path.GetDirectoryName(path);
+            return !Directory.Exists(directoryName);
+        }
+
+        private static void SaveBytesToDisk(string path, byte[] data)
+        {
+            try
+            {
+                File.WriteAllBytes(path, data);
+            }
+            catch (Exception ex)
+            {
+                Debug.Log(ex.Message);
+            }
+        }
+
+        private static byte[] LoadBytesFromDisk(string path)
+        {
+            if (!File.Exists(path))
+                return null;
+
+            return File.ReadAllBytes(path);
+        }
+
+       
+
+        #endregion
+
     }
 }
 

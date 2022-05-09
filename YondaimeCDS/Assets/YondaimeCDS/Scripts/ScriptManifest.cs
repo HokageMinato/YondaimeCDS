@@ -9,6 +9,7 @@ namespace YondaimeCDS {
     {
         public BundleScriptHashTuple[] bundleWiseScriptHashes;
         public List<string> allScriptHashes = new List<string>();
+        public string bit;
 
         public ScriptManifest(int entryCount)
         {

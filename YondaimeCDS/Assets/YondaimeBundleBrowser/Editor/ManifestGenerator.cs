@@ -10,19 +10,27 @@ namespace YondaimeCDS
 
     public class ManifestGenerator 
     {
-        public static void GenerateManifests(CompatibilityAssetBundleManifest buildManifest,string outputDirectory) 
+       
+        public static void GenerateManifests(CompatibilityAssetBundleManifest buildManifest,string outputDirectory)
         {
             string bundleManifest = IOUtils.Serialize(buildManifest);
             string manifestHash = ComputeHash(IOUtils.StringToBytes(bundleManifest));
             
-            string scriptManifest = GetSerializableScriptManifest();
-            string scriptManifestHash = ComputeHash(IOUtils.StringToBytes(scriptManifest));
+            SerializedAssetManifest manifest = JsonUtility.FromJson<SerializedAssetManifest>(bundleManifest);
+            manifest.bit = manifestHash;
+            bundleManifest = IOUtils.Serialize(manifest);
 
-            bundleManifest += manifestHash;
-            scriptManifest += scriptManifestHash;
+            ScriptManifest scanifest = GetScriptManifest();
+            string scriptManifest = IOUtils.Serialize(scanifest);
+            string scriptManifestHash = ComputeHash(IOUtils.StringToBytes(scriptManifest));
+            scanifest.bit = scriptManifestHash;
+
+
+
+            scriptManifest = IOUtils.Serialize(scanifest);
 
             byte[] manifestData = IOUtils.StringToBytes(bundleManifest);
-            byte[] scriptManifestData= IOUtils.StringToBytes(scriptManifest);
+            byte[] scriptManifestData = IOUtils.StringToBytes(scriptManifest);
 
             string combinedHash = manifestHash + scriptManifestHash;
             byte[] hashData = IOUtils.StringToBytes(combinedHash);
@@ -30,12 +38,13 @@ namespace YondaimeCDS
 
             File.WriteAllBytes(Path.Combine(outputDirectory, IOUtils.MANIFEST), manifestData);
             File.WriteAllBytes(Path.Combine(outputDirectory, IOUtils.MANIFEST_HASH), hashData);
-            File.WriteAllBytes(Path.Combine(outputDirectory, IOUtils.SCRIPT_MANIFEST_HASH), scriptManifestData);
-            File.Delete(Path.Combine(outputDirectory, "Android.manifest"));
+            File.WriteAllBytes(Path.Combine(outputDirectory, IOUtils.SCRIPT_MANIFEST), scriptManifestData);
+          //File.Delete(Path.Combine(outputDirectory, "Android.manifest"));
         }
 
+        
 
-        static string GetSerializableScriptManifest()
+        static ScriptManifest GetScriptManifest()
         {
             string[] assetBundles = AssetDatabase.GetAllAssetBundleNames();
             int totalAssetBundleCount = assetBundles.Length;
@@ -55,11 +64,9 @@ namespace YondaimeCDS
                 }
             }
 
-            LocalScriptManifest localManifest = AssetDatabase.LoadAssetAtPath<LocalScriptManifest>("Assets/YondaimeCDS/Data/LocalScriptManifest.asset");
-            localManifest.scriptManifest = mf;
-            EditorUtility.SetDirty(localManifest);
 
-            return IOUtils.Serialize(mf);
+            //SaveInLocalScriptable
+            return mf;
         }
 
         static List<string> GetScriptDependenciesOf(string assetPath)

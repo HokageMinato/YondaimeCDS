@@ -94,9 +94,8 @@ namespace AssetBundleBrowser.AssetBundleDataSource
                 bundles[i].addressableNames = names;
             }
 
-
-
             CompatibilityAssetBundleManifest buildManifest = CompatibilityBuildPipeline.BuildAssetBundles(info.outputDirectory,bundles, info.options, info.buildTarget);
+            
 
             if (buildManifest == null)
             {
@@ -104,6 +103,7 @@ namespace AssetBundleBrowser.AssetBundleDataSource
                 return false;
             }
 
+            
             YondaimeCDS.ManifestGenerator.GenerateManifests(buildManifest, info.outputDirectory);
            
 

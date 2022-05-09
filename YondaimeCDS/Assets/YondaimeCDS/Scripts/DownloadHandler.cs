@@ -10,14 +10,9 @@ namespace YondaimeCDS
 
     public class DownloadHandler 
     {
-        private DownloaderConfig _downloaderConfig;
         private Action<float> _onProgressChanged;
         
-        public DownloadHandler(DownloaderConfig downloaderConfig) 
-        {
-            _downloaderConfig = downloaderConfig;
-        }
-
+        
         public async Task DownloadBundle(string bundleName,Action<float> OnProgressChanged=null)
         {
             _onProgressChanged = OnProgressChanged;
@@ -32,7 +27,7 @@ namespace YondaimeCDS
 
         public async Task<byte[]> DownloadContent(string bundleName)
         {
-            string url = Path.Combine(_downloaderConfig.remoteURL, bundleName);
+            string url = Path.Combine(Config.REMOTE_URL, bundleName);
 
             using (UnityWebRequest downloadRequest = UnityWebRequest.Get(url))
             {
@@ -44,9 +39,12 @@ namespace YondaimeCDS
                     await Task.Yield();
                 }
 
-             
+
                 if (downloadRequest.result == UnityWebRequest.Result.Success)
+                {
+                    Downloader.configUpdaterInstance.SetStatusDownloaded(bundleName);
                     return downloadRequest.downloadHandler.data;
+                }
 
                 else
                     Debug.Log(downloadRequest.error);
@@ -58,11 +56,7 @@ namespace YondaimeCDS
 
         private void SaveAssetBundleToDisk(string fileName, byte[] assetBytes)
         {
-            string storagePath = _downloaderConfig.StoragePath;      
-            fileName = Path.Combine(storagePath, fileName);
-
-            IOUtils.CreateMissingDirectory(fileName);
-            IOUtils.SaveBytesToDisk(fileName, assetBytes);
+            IOUtils.SaveToLocalDisk(assetBytes, fileName);
         }
 
         

@@ -1,6 +1,5 @@
 using System.Collections.Generic;
 using System.IO;
-using System.Text;
 using System.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.Build.Pipeline;
@@ -10,135 +9,240 @@ namespace YondaimeCDS {
     public class ContentUpdateDetector 
     {
 
-        private static string MANIFEST_HASH { get { return IOUtils.MANIFEST_HASH; } }
-        private static string MANIFEST { get { return IOUtils.MANIFEST; } }
-        private static string SCRIPT_MANIFEST { get { return IOUtils.SCRIPT_MANIFEST_HASH; } }
+        private static string MANIFEST_HASH { get { return Config.MANIFEST_HASH; } }
+        private static string MANIFEST { get { return Config.MANIFEST; } }
+        private static string SCRIPT_MANIFEST { get { return Config.SCRIPT_MANIFEST; } }
 
+        byte[] serverManifestHashBuffer;
 
-        DownloaderConfig _downloaderConfig;
-
-
+        string serverScriptManifestHash;
+        string localScriptManifestHash;
+        ScriptManifest serverScriptManifest;
+        ScriptManifest localScriptManifest;
        
-        public ContentUpdateDetector(DownloaderConfig config) 
+
+        
+        string serverAssetManifestHash;
+        string localAssetManifestHash;
+
+        byte[] serverManifestBuffer;
+        public SerializedAssetManifest localAssetManifest;
+        SerializedAssetManifest serverAssetManifest;
+
+        bool scriptUpdatesPresent = false;
+
+        List<string> compatibleBundles = new List<string>();
+       
+       
+        public async Task<List<string>> GetUpdates()
+        {
+            await ParseManifestHashes();
+            
+            if (localAssetManifestHash == null || localScriptManifestHash == null)
+            {
+                IOUtils.SaveToLocalDisk(serverManifestHashBuffer, MANIFEST_HASH);
+                await DownloadAssetManifestFromServer();
+                FillBundleListFromServerAssetManifest();
+                CreateLocalAssetManifestFromServer();
+                return localAssetManifest.PendingUpdates;
+            }
+
+            await FilterScriptInCompitableBundles();
+
+            LoadLocalAssetManifest();
+
+            if (NoCompitableBundlesPresent())
+            {
+                return GetPendingUpdatesFromLocalAssetManifest(); //if any
+            }
+
+            await PrepareAssetManifestUpdates();
+
+            if (AssetUpdatesPresent())
+            {
+                SyncLocalAssetManifest();
+                IOUtils.SaveToLocalDisk(serverManifestHashBuffer, MANIFEST_HASH);
+            }
+
+            return GetPendingUpdatesFromLocalAssetManifest();
+        }
+
+        private void CreateLocalAssetManifestFromServer()
+        {
+            localAssetManifest = serverAssetManifest;
+            SyncLocalAssetManifest();
+        }
+
+        private async Task ParseManifestHashes()
+        {
+            serverManifestHashBuffer = await DownloadFromServer(MANIFEST_HASH);
+            byte[] localManifestHashBuffer = IOUtils.LoadFromLocalDisk(MANIFEST_HASH);
+
+            if (localManifestHashBuffer != null)
+            {
+                string localManifestHash = IOUtils.BytesToString(localManifestHashBuffer);
+                localScriptManifestHash = localManifestHash.Substring(32, 32);
+                localAssetManifestHash = localManifestHash.Substring(0, 32);
+            }
+
+            string serverManifestHash = IOUtils.BytesToString(serverManifestHashBuffer);
+            serverScriptManifestHash = serverManifestHash.Substring(32, 32);
+            serverAssetManifestHash = serverManifestHash.Substring(0, 32);
+        }
+
+
+
+
+
+        #region ASSET_MANIFEST_MANAGEMENT
+        public void SetStatusDownloaded(string bundleName) 
+        {
+            if (localAssetManifest == null) {
+                Debug.Log("Nu");
+                return;
+                    }
+            localAssetManifest.PendingUpdates.Remove(bundleName);
+            WriteLocalManifestToDisk();
+        }
+
+        private async Task PrepareAssetManifestUpdates()
+        {
+            if (localAssetManifestHash != serverAssetManifestHash)
+            {
+                await DownloadAssetManifestFromServer(); 
+
+                if (!scriptUpdatesPresent)
+                    FillBundleListFromServerAssetManifest();
+
+                localAssetManifest.GenerateUpdateList(serverAssetManifest, ref compatibleBundles);
+            }
+        }
+
+
+        private async Task DownloadAssetManifestFromServer()
+        {
+            serverManifestBuffer = await DownloadFromServer(MANIFEST);
+            serverAssetManifest = IOUtils.Deserialize<SerializedAssetManifest>(IOUtils.BytesToString(serverManifestBuffer));
+         
+        }
+
+        private void LoadLocalAssetManifest()
+        {
+            localAssetManifest = IOUtils.Deserialize<SerializedAssetManifest>(IOUtils.BytesToString(IOUtils.LoadFromLocalDisk(MANIFEST)));
+        }
+
+        private bool AssetUpdatesPresent() 
         { 
-            _downloaderConfig = config;
+            return compatibleBundles.Count > 0;
         }
 
-        public async Task<bool> IsUpdateAvailable()
+        private void SyncLocalAssetManifest() 
         {
-            byte[] serverManifestHashBits = await DownloadFromServer(MANIFEST_HASH);
-            byte[] localManifestHashBits = LoadFromLocalDisk(MANIFEST_HASH);
-
-            if (localManifestHashBits == null)
-            {
-                SaveToLocalDisk(serverManifestHashBits, MANIFEST_HASH);
-                SaveToLocalDisk(await DownloadFromServer(MANIFEST), MANIFEST);
-                SaveToLocalDisk(await DownloadFromServer(SCRIPT_MANIFEST), SCRIPT_MANIFEST);
-                return true;
-            }
-
-            string serverManifestHashData = IOUtils.BytesToString(serverManifestHashBits);
-            string localManifestHashData = IOUtils.BytesToString(LoadFromLocalDisk(MANIFEST_HASH));
-
-
-            string serverScriptManifestHash = serverManifestHashData.Substring(32, 31);
-            string localScriptManifestHash = localManifestHashData.Substring(32, 31);
-
-
-            List<string> compatibleBundleUpdates = new List<string>();
-
-            if (serverScriptManifestHash != localScriptManifestHash)
-                await GetScriptCompatibleDownloadableBundleList(compatibleBundleUpdates);
-
-            if (NoCompitableBundles(compatibleBundleUpdates))
-            {
-                //Dont do anything simply return. dont even write to disk. otherwise next run will ruin comparision.
-                return false;
-            }
-
-            string serverAssetManifestHash = serverManifestHashData.Substring(0, 31);
-            string localAssetManifestHash = localManifestHashData.Substring(0, 31);
-
-            if (serverAssetManifestHash != localAssetManifestHash)
-            {
-                byte[] serverMani
-
-            }
-        
-            return false;
+            localAssetManifest.UpdateWithServerManifest(serverAssetManifest, ref compatibleBundles);
+            WriteLocalManifestToDisk();
         }
 
-        private static bool NoCompitableBundles(List<string> compatibleBundleUpdates)
+        private void WriteLocalManifestToDisk() 
         {
-            return compatibleBundleUpdates.Count < 1;
+           // IOUtils.SaveToLocalDisk(IOUtils.StringToBytes(IOUtils.PackManifest(localAssetManifest, serverAssetManifestHash)), MANIFEST);
         }
 
-
-
-
-
-
-
-
-        #region MANIFEST_MANAGEMENT
-        private async Task<byte[]> DownloadFromServer(string manifestName)
+        private List<string> GetPendingUpdatesFromLocalAssetManifest() 
         {
-            return await new DownloadHandler(_downloaderConfig).DownloadContent(manifestName);
-            //Dont save, every first change detection will replace old with new and next run will mark incompitables compitable.
-            //Write only if compatibility check passes.
+            return localAssetManifest.PendingUpdates;
         }
-
-        
-
         #endregion
 
         #region SCRIPT_MANIFEST_MANAGEMENT
 
-        private async Task GetScriptCompatibleDownloadableBundleList(List<string> compatibleBundleList) 
+        private async Task FilterScriptInCompitableBundles()
         {
-            BundleScriptHashTuple[] serverManifestData = IOUtils.Deserialize<ScriptManifest>(await GetServerScriptManifest()).bundleWiseScriptHashes;
-            
+            if (serverScriptManifestHash != localScriptManifestHash)
+            {
+                await LoadScriptManifests();
+                FillBundleListFromServerScriptManifest();
+                FilterIncompitableBundles();
+                scriptUpdatesPresent = true;
+                return;
+            }
+
+            scriptUpdatesPresent = false;
+        }
+
+        private async Task LoadScriptManifests() 
+        {
+            await LoadScriptManifestFromServer();
+            LoadLocalScriptManifest();
+        }
+
+        private void FilterIncompitableBundles() 
+        {
+            BundleScriptHashTuple[] serverManifestData = serverScriptManifest.bundleWiseScriptHashes;
             for (int i = 0; i < serverManifestData.Length; i++)
             {
-               if(IsBundleCompitable(serverManifestData[i]))
-                    compatibleBundleList.Add(serverManifestData[i].BundleName);
+                if (!IsBundleCompitable(serverManifestData[i]))
+                    compatibleBundles.Remove(serverManifestData[i].BundleName);
             }
         }
 
-        private async Task<string> GetServerScriptManifest() 
+        private async Task LoadScriptManifestFromServer() 
         {
             string content = IOUtils.BytesToString(await DownloadFromServer(SCRIPT_MANIFEST));
-            return content.Substring(0, content.Length - 32);
+            serverScriptManifest = IOUtils.Deserialize<ScriptManifest>(content);
         }
 
         private bool IsBundleCompitable(BundleScriptHashTuple bundleScriptData) 
         {
-            List<string> localScripts = _downloaderConfig.localScriptManifest.scriptManifest.allScriptHashes;
+            List<string> localScripts = localScriptManifest.allScriptHashes;
             List<string> bundleScripts = bundleScriptData.BundleSciptHashes;
 
             for (int i = 0; i < bundleScripts.Count; i++) 
-            { 
-                if(!localScripts.Contains(bundleScripts[i]))
+            {
+                if (!localScripts.Contains(bundleScripts[i]))
+                {
+                    Debug.Log($"Script incompatibility detected for {bundleScriptData.BundleName}");
                     return false;
+                }
             }
 
             return true;
         }
-        
+
+        private void LoadLocalScriptManifest() 
+        {
+            localScriptManifest = IOUtils.Deserialize<ScriptManifest>(IOUtils.BytesToString(IOUtils.LoadFromLocalDisk(SCRIPT_MANIFEST)));
+        }
+
+        private void FillBundleListFromServerScriptManifest() 
+        {
+            BundleScriptHashTuple[] tuples = serverScriptManifest.bundleWiseScriptHashes;
+
+            for (int i = 0; i < tuples.Length; i++) 
+            {
+                compatibleBundles.Add(tuples[i].BundleName);
+            }
+        }
+
+        private void FillBundleListFromServerAssetManifest() 
+        {
+            compatibleBundles.AddRange(serverAssetManifest.Keys);
+        }
         #endregion
 
         #region IO_OPERATION
-        private void SaveToLocalDisk(byte[] contentData, string contentName)
+
+        private async Task<byte[]> DownloadFromServer(string manifestName)
         {
-            string fileName = Path.Combine(_downloaderConfig.StoragePath, contentName);
-            IOUtils.CreateMissingDirectory(fileName);
-            IOUtils.SaveBytesToDisk(fileName, contentData);
+            return await new DownloadHandler().DownloadContent(manifestName);
+            //Dont save, every first change detection will replace old with new and next run will mark incompitables compitable.
+            //Write only if compatibility check passes.
         }
 
-        private byte[] LoadFromLocalDisk(string contentName)
+      
+
+        private bool NoCompitableBundlesPresent()
         {
-            string filePath = Path.Combine(_downloaderConfig.StoragePath, contentName);
-            return IOUtils.LoadBytesFromDisk(filePath);
+            return compatibleBundles.Count < 1 && scriptUpdatesPresent;
         }
         #endregion
     }

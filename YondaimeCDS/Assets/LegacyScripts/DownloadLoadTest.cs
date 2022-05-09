@@ -20,10 +20,12 @@ public class DownloadLoadTest : CustomBehaviour
     
     void Start()
     {
+        
+
         path = Application.persistentDataPath;
         
         Debug.Log("st2");
-        Downloader.Initialize(downloaderConfig);
+        //Downloader.Initialize(downloaderConfig);
         StartCoroutine(Fetcher());
         //if (Downloader.CalculateRemainingDownloadSize("w2r2").Result > 0)
         //{
@@ -40,98 +42,43 @@ public class DownloadLoadTest : CustomBehaviour
 
     IEnumerator Fetcher() 
     {
-        //Task downloadTask = Downloader.DownloadBundle("w2r2",amount => { progressbar.fillAmount = amount; });
+        Config.REMOTE_URL = downloaderConfig.remoteURL;
+        Config.STORAGE_PATH = downloaderConfig.StoragePath;
         
-        Task<bool> downloadTask = Downloader.CheckForContentUpdate();
+        Task<List<string>> downloadTask = Downloader.CheckForContentUpdate();
 
         while (!downloadTask.IsCompleted)
         {
             yield return null;
         }
 
-
-        Debug.Log($"ed2 {downloadTask.Result}");
-
-    }
-
-    void Downloading(int percantage) 
-    { 
-        Debug.Log(percantage);
-    }
-
-    void LoadAssetBundle()
-    {
-        string _fileName = Path.Combine(path, fileName);
-        AssetBundle bundle = AssetBundle.LoadFromFile(_fileName);
-        if (bundle == null)
-            Debug.LogError("Failed to load");
-
-        LogNames(bundle);
-
-        GameObject cube = bundle.LoadAsset<GameObject>("Content");
-        MonoInstantiate(cube);
-    }
-
-
-    void LogNames(AssetBundle bundle) 
-    { 
-        string[] names = bundle.GetAllAssetNames();
-        foreach (string name in names)
-            Debug.Log(name);
-    }
-
-    async void DownloadAssetBundle()
-    {
-        Debug.Log("Running");
-
-        try
+        List<string> downloadList = downloadTask.Result;
+        for (int i = 0; i < downloadList.Count; i++)
         {
-            HttpResponseMessage response = await client.GetAsync("https://github.com/HokageMinato/YondaimeCDSContents/raw/main/content");
-            byte[] content = await response.Content.ReadAsByteArrayAsync();
-            SaveAssetBundleToDisk(fileName, content);
-            response.Dispose();
+            Debug.Log(downloadList[i]);
         }
-        catch (HttpRequestException e)
-        {
-            Debug.Log($"Errored {e.Message}");
-        }
+        
+        //Task download = Downloader.DownloadBundle("content",amount => { progressbar.fillAmount = amount; });
+        //while(!download.IsCompleted)
+        //    yield return null;
+
+        //Task<List<string>> downloadTask2 = Downloader.CheckForContentUpdate();
+
+        //while (!downloadTask2.IsCompleted)
+        //{
+        //    yield return null;
+        //}
+
+        //downloadList = downloadTask2.Result;
+        //for (int i = 0; i < downloadList.Count; i++)
+        //{
+        //    Debug.Log(downloadList[i]);
+        //}
 
 
-        Debug.Log("End");
-        LoadAssetBundle();
     }
 
-    private void SaveAssetBundleToDisk(string _fileName, byte[] assetBytes)
-    {
-        string fileName = Path.Combine(path, _fileName);
-        Debug.LogError("Save asset bundle : " + fileName);
-        Save(fileName, assetBytes);
-    }
-    private void Save(string path, byte[] data)
-    {
-        if (!Directory.Exists(Path.GetDirectoryName(path)))
-        {
-            Directory.CreateDirectory(Path.GetDirectoryName(path));
-        }
-
-        try
-        {
-            File.WriteAllBytes(path, data);
-        }
-        catch (Exception e)
-        {
-            Debug.LogError(e.Message);
-        }
-    }
-
-    [ContextMenu("Test")]
-    public void ListAllNames() 
-    {
-       
-    }
-
-    public GameObject Go;
-
+    
     
 
 }
