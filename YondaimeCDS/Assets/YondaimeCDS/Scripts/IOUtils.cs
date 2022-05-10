@@ -8,19 +8,6 @@ namespace YondaimeCDS {
     public class IOUtils
     {
         
-
-       
-       
-        public static string BytesToString(byte[] content)
-        {
-            return Encoding.UTF8.GetString(content);
-        }
-
-        public static byte[] StringToBytes(string data) 
-        {
-            return Encoding.UTF8.GetBytes(data);
-        }
-
         public static T Deserialize<T>(string json)
         {
             return JsonUtility.FromJson<T>(json);
@@ -32,19 +19,23 @@ namespace YondaimeCDS {
         }
 
 
-        public static void SaveToLocalDisk(byte[] contentData, string contentName)
+        public static void SaveToLocalDisk<T>(T content, string contentName)
         {
             string fileName = Path.Combine(Config.STORAGE_PATH, contentName);
             CreateMissingDirectory(fileName);
-            SaveBytesToDisk(fileName, contentData);
+            SaveBytesToDisk(fileName, StringToBytes(Serialize(content)));
         }
 
-        public static byte[] LoadFromLocalDisk(string contentName)
+        public static T LoadFromLocalDisk<T>(string contentName)
         {
-            string filePath = Path.Combine(Config.STORAGE_PATH, contentName);
-            return LoadBytesFromDisk(filePath);
+            byte[] loadBuffer = LoadBytesFromDisk(Path.Combine(Config.STORAGE_PATH, contentName));
+            if (loadBuffer == null)
+                return default;
+            
+            return Deserialize<T>(BytesToString(loadBuffer));
         }
 
+       
 
         public static byte[] ToMD5(byte[] data)
         {
@@ -54,9 +45,18 @@ namespace YondaimeCDS {
                 return md5.ComputeHash(data);
             }
         }
-
+        public static string BytesToString(byte[] content)
+        {
+            return Encoding.UTF8.GetString(content);
+        }
 
         #region PRIVATES
+
+
+        public static byte[] StringToBytes(string data)
+        {
+            return Encoding.UTF8.GetBytes(data);
+        }
         private static void CreateMissingDirectory(string path)
         {
             if (IsDirectoryMissing(path))

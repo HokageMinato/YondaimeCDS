@@ -105,7 +105,7 @@ public class Reporter : MonoBehaviour
         }
     }
 
-    List<Sample> samples = new List<Sample>();
+    private List<Sample> samples = new List<Sample>();
 
     public class Log
     {
@@ -131,72 +131,72 @@ public class Reporter : MonoBehaviour
         }
     }
     //contains all uncollapsed log
-    List<Log> logs = new List<Log>();
+    private List<Log> logs = new List<Log>();
     //contains all collapsed logs
-    List<Log> collapsedLogs = new List<Log>();
+    private List<Log> collapsedLogs = new List<Log>();
     //contain logs which should only appear to user , for example if you switch off show logs + switch off show warnings
     //and your mode is collapse,then this list will contains only collapsed errors
-    List<Log> currentLog = new List<Log>();
+    private List<Log> currentLog = new List<Log>();
 
     //used to check if the new coming logs is already exist or new one
-    MultiKeyDictionary<string, string, Log> logsDic = new MultiKeyDictionary<string, string, Log>();
+    private MultiKeyDictionary<string, string, Log> logsDic = new MultiKeyDictionary<string, string, Log>();
     //to save memory
-    Dictionary<string, string> cachedString = new Dictionary<string, string>();
+    private Dictionary<string, string> cachedString = new Dictionary<string, string>();
 
     [HideInInspector]
     //show hide In Game Logs
     public bool show = false;
     //collapse logs
-    bool collapse;
+    private bool collapse;
     //to decide if you want to clean logs for new loaded scene
-    bool clearOnNewSceneLoaded;
+    private bool clearOnNewSceneLoaded;
 
-    bool showTime;
+    private bool showTime;
 
-    bool showScene;
+    private bool showScene;
 
-    bool showMemory;
+    private bool showMemory;
 
-    bool showFps;
+    private bool showFps;
 
-    bool showGraph;
+    private bool showGraph;
 
     //show or hide logs
-    bool showLog = true;
+    private bool showLog = true;
     //show or hide warnings
-    bool showWarning = true;
+    private bool showWarning = true;
     //show or hide errors
-    bool showError = true;
+    private bool showError = true;
 
     //total number of logs
-    int numOfLogs = 0;
+    private int numOfLogs = 0;
     //total number of warnings
-    int numOfLogsWarning = 0;
+    private int numOfLogsWarning = 0;
     //total number of errors
-    int numOfLogsError = 0;
+    private int numOfLogsError = 0;
     //total number of collapsed logs
-    int numOfCollapsedLogs = 0;
+    private int numOfCollapsedLogs = 0;
     //total number of collapsed warnings
-    int numOfCollapsedLogsWarning = 0;
+    private int numOfCollapsedLogsWarning = 0;
     //total number of collapsed errors
-    int numOfCollapsedLogsError = 0;
+    private int numOfCollapsedLogsError = 0;
 
     //maximum number of allowed logs to view
     //public int maxAllowedLog = 1000 ;
 
-    bool showClearOnNewSceneLoadedButton = true;
-    bool showTimeButton = true;
-    bool showSceneButton = true;
-    bool showMemButton = true;
-    bool showFpsButton = true;
-    bool showSearchText = true;
-    bool showCopyButton = true;
-    bool showSaveButton = true;
+    private bool showClearOnNewSceneLoadedButton = true;
+    private bool showTimeButton = true;
+    private bool showSceneButton = true;
+    private bool showMemButton = true;
+    private bool showFpsButton = true;
+    private bool showSearchText = true;
+    private bool showCopyButton = true;
+    private bool showSaveButton = true;
 
-    string buildDate;
-    string logDate;
-    float logsMemUsage;
-    float graphMemUsage;
+    private string buildDate;
+    private string logDate;
+    private float logsMemUsage;
+    private float graphMemUsage;
     public float TotalMemUsage
     {
         get
@@ -204,7 +204,8 @@ public class Reporter : MonoBehaviour
             return logsMemUsage + graphMemUsage;
         }
     }
-    float gcTotalMemory;
+
+    private float gcTotalMemory;
     public string UserData = "";
     //frame rate per second
     public float fps;
@@ -212,15 +213,17 @@ public class Reporter : MonoBehaviour
 
     //List<Texture2D> snapshots = new List<Texture2D>() ;
 
-    enum ReportView
+    private enum ReportView
     {
         None,
         Logs,
         Info,
         Snapshot,
     }
-    ReportView currentView = ReportView.Logs;
-    enum DetailView
+
+    private ReportView currentView = ReportView.Logs;
+
+    private enum DetailView
     {
         None,
         StackTrace,
@@ -229,76 +232,77 @@ public class Reporter : MonoBehaviour
 
     //used to check if you have In Game Logs multiple time in different scene
     //only one should work and other should be deleted
-    static bool created = false;
+    private static bool created = false;
     //public delegate void OnLogHandler( string condition, string stack-trace, LogType type );
     //public event OnLogHandler OnLog ;
 
     public Images images;
     // gui
-    GUIContent clearContent;
-    GUIContent collapseContent;
-    GUIContent clearOnNewSceneContent;
-    GUIContent showTimeContent;
-    GUIContent showSceneContent;
-    GUIContent userContent;
-    GUIContent showMemoryContent;
-    GUIContent softwareContent;
-    GUIContent dateContent;
-    GUIContent showFpsContent;
-    //GUIContent graphContent;
-    GUIContent infoContent;
-    GUIContent saveLogsContent;
-    GUIContent searchContent;
-    GUIContent copyContent;
-    GUIContent closeContent;
+    private GUIContent clearContent;
+    private GUIContent collapseContent;
+    private GUIContent clearOnNewSceneContent;
+    private GUIContent showTimeContent;
+    private GUIContent showSceneContent;
+    private GUIContent userContent;
+    private GUIContent showMemoryContent;
+    private GUIContent softwareContent;
+    private GUIContent dateContent;
 
-    GUIContent buildFromContent;
-    GUIContent systemInfoContent;
-    GUIContent graphicsInfoContent;
-    GUIContent backContent;
+    private GUIContent showFpsContent;
+    //GUIContent graphContent;
+    private GUIContent infoContent;
+    private GUIContent saveLogsContent;
+    private GUIContent searchContent;
+    private GUIContent copyContent;
+    private GUIContent closeContent;
+
+    private GUIContent buildFromContent;
+    private GUIContent systemInfoContent;
+    private GUIContent graphicsInfoContent;
+    private GUIContent backContent;
 
     //GUIContent cameraContent;
 
-    GUIContent logContent;
-    GUIContent warningContent;
-    GUIContent errorContent;
-    GUIStyle barStyle;
-    GUIStyle buttonActiveStyle;
+    private GUIContent logContent;
+    private GUIContent warningContent;
+    private GUIContent errorContent;
+    private GUIStyle barStyle;
+    private GUIStyle buttonActiveStyle;
 
-    GUIStyle nonStyle;
-    GUIStyle lowerLeftFontStyle;
-    GUIStyle backStyle;
-    GUIStyle evenLogStyle;
-    GUIStyle oddLogStyle;
-    GUIStyle logButtonStyle;
-    GUIStyle selectedLogStyle;
-    GUIStyle selectedLogFontStyle;
-    GUIStyle stackLabelStyle;
-    GUIStyle scrollerStyle;
-    GUIStyle searchStyle;
-    GUIStyle sliderBackStyle;
-    GUIStyle sliderThumbStyle;
-    GUISkin toolbarScrollerSkin;
-    GUISkin logScrollerSkin;
-    GUISkin graphScrollerSkin;
+    private GUIStyle nonStyle;
+    private GUIStyle lowerLeftFontStyle;
+    private GUIStyle backStyle;
+    private GUIStyle evenLogStyle;
+    private GUIStyle oddLogStyle;
+    private GUIStyle logButtonStyle;
+    private GUIStyle selectedLogStyle;
+    private GUIStyle selectedLogFontStyle;
+    private GUIStyle stackLabelStyle;
+    private GUIStyle scrollerStyle;
+    private GUIStyle searchStyle;
+    private GUIStyle sliderBackStyle;
+    private GUIStyle sliderThumbStyle;
+    private GUISkin toolbarScrollerSkin;
+    private GUISkin logScrollerSkin;
+    private GUISkin graphScrollerSkin;
 
     public Vector2 size = new Vector2(32, 32);
     public float maxSize = 20;
     public int numOfCircleToShow = 1;
-    static string[] scenes;
-    string currentScene;
-    string filterText = "";
+    private static string[] scenes;
+    private string currentScene;
+    private string filterText = "";
 
-    string deviceModel;
-    string deviceType;
-    string deviceName;
-    string graphicsMemorySize;
+    private string deviceModel;
+    private string deviceType;
+    private string deviceName;
+    private string graphicsMemorySize;
 #if !UNITY_CHANGE1
-    string maxTextureSize;
+    private string maxTextureSize;
 #endif
-    string systemMemorySize;
+    private string systemMemorySize;
 
-    void Awake()
+    private void Awake()
     {
         if (!Initialized)
             Initialize();
@@ -315,18 +319,18 @@ public class Reporter : MonoBehaviour
 #endif
     }
 
-    void OnEnable()
+    private void OnEnable()
     {
         if (logs.Count == 0)//if recompile while in play mode
             clear();
     }
 
-    void OnDisable()
+    private void OnDisable()
     {
 
     }
 
-    void addSample()
+    private void addSample()
     {
         Sample sample = new Sample();
         sample.fps = fps;
@@ -458,7 +462,7 @@ public class Reporter : MonoBehaviour
 
     }
 
-    void initializeStyle()
+    private void initializeStyle()
     {
         int paddingX = (int)(size.x * 0.2f);
         int paddingY = (int)(size.y * 0.2f);
@@ -598,14 +602,14 @@ public class Reporter : MonoBehaviour
         //inGameLogsScrollerSkin.verticalScrollbar.fixedWidth = size.x * 2;
     }
 
-    void Start()
+    private void Start()
     {
         logDate = System.DateTime.Now.ToString();
         StartCoroutine("readInfo");
     }
 
     //clear all logs
-    void clear()
+    private void clear()
     {
         logs.Clear();
         collapsedLogs.Clear();
@@ -626,32 +630,32 @@ public class Reporter : MonoBehaviour
         selectedLog = null;
     }
 
-    Rect screenRect = Rect.zero;
-    Rect toolBarRect = Rect.zero;
-    Rect logsRect = Rect.zero;
-    Rect stackRect = Rect.zero;
-    Rect graphRect = Rect.zero;
-    Rect graphMinRect = Rect.zero;
-    Rect graphMaxRect = Rect.zero;
-    Rect buttomRect = Rect.zero;
-    Vector2 stackRectTopLeft;
-    Rect detailRect = Rect.zero;
+    private Rect screenRect = Rect.zero;
+    private Rect toolBarRect = Rect.zero;
+    private Rect logsRect = Rect.zero;
+    private Rect stackRect = Rect.zero;
+    private Rect graphRect = Rect.zero;
+    private Rect graphMinRect = Rect.zero;
+    private Rect graphMaxRect = Rect.zero;
+    private Rect buttomRect = Rect.zero;
+    private Vector2 stackRectTopLeft;
+    private Rect detailRect = Rect.zero;
 
-    Vector2 scrollPosition;
-    Vector2 scrollPosition2;
-    Vector2 toolbarScrollPosition;
+    private Vector2 scrollPosition;
+    private Vector2 scrollPosition2;
+    private Vector2 toolbarScrollPosition;
 
     //int 	selectedIndex = -1;
-    Log selectedLog;
+    private Log selectedLog;
 
-    float toolbarOldDrag = 0;
-    float oldDrag;
-    float oldDrag2;
-    float oldDrag3;
-    int startIndex;
+    private float toolbarOldDrag = 0;
+    private float oldDrag;
+    private float oldDrag2;
+    private float oldDrag3;
+    private int startIndex;
 
     //calculate what is the currentLog : collapsed or not , hide or view warnings ......
-    void calculateCurrentLog()
+    private void calculateCurrentLog()
     {
         bool filter = !string.IsNullOrEmpty(filterText);
         string _filterText = "";
@@ -730,21 +734,22 @@ public class Reporter : MonoBehaviour
         }
     }
 
-    Rect countRect = Rect.zero;
-    Rect timeRect = Rect.zero;
-    Rect timeLabelRect = Rect.zero;
-    Rect sceneRect = Rect.zero;
-    Rect sceneLabelRect = Rect.zero;
-    Rect memoryRect = Rect.zero;
-    Rect memoryLabelRect = Rect.zero;
-    Rect fpsRect = Rect.zero;
-    Rect fpsLabelRect = Rect.zero;
-    GUIContent tempContent = new GUIContent();
+    private Rect countRect = Rect.zero;
+    private Rect timeRect = Rect.zero;
+    private Rect timeLabelRect = Rect.zero;
+    private Rect sceneRect = Rect.zero;
+    private Rect sceneLabelRect = Rect.zero;
+    private Rect memoryRect = Rect.zero;
+    private Rect memoryLabelRect = Rect.zero;
+    private Rect fpsRect = Rect.zero;
+    private Rect fpsLabelRect = Rect.zero;
+    private GUIContent tempContent = new GUIContent();
 
 
-    Vector2 infoScrollPosition;
-    Vector2 oldInfoDrag;
-    void DrawInfo()
+    private Vector2 infoScrollPosition;
+    private Vector2 oldInfoDrag;
+
+    private void DrawInfo()
     {
 
         GUILayout.BeginArea(screenRect, backStyle);
@@ -927,7 +932,7 @@ public class Reporter : MonoBehaviour
     }
 
 
-    void drawInfo_enableDisableToolBarButtons()
+    private void drawInfo_enableDisableToolBarButtons()
     {
         GUILayout.BeginHorizontal();
         GUILayout.Space(size.x);
@@ -995,7 +1000,7 @@ public class Reporter : MonoBehaviour
         GUILayout.EndHorizontal();
     }
 
-    void DrawReport()
+    private void DrawReport()
     {
         screenRect.x = 0f;
         screenRect.y = 0f;
@@ -1031,7 +1036,7 @@ public class Reporter : MonoBehaviour
         GUILayout.EndArea();
     }
 
-    void drawToolBar()
+    private void drawToolBar()
     {
 
         toolBarRect.x = 0f;
@@ -1238,8 +1243,9 @@ public class Reporter : MonoBehaviour
     }
 
 
-    Rect tempRect;
-    void DrawLogs()
+    private Rect tempRect;
+
+    private void DrawLogs()
     {
 
         GUILayout.BeginArea(logsRect, backStyle);
@@ -1479,18 +1485,18 @@ public class Reporter : MonoBehaviour
     }
 
 
-    float graphSize = 4f;
-    int startFrame = 0;
-    int currentFrame = 0;
-    Vector3 tempVector1;
-    Vector3 tempVector2;
-    Vector2 graphScrollerPos;
-    float maxFpsValue;
-    float minFpsValue;
-    float maxMemoryValue;
-    float minMemoryValue;
+    private float graphSize = 4f;
+    private int startFrame = 0;
+    private int currentFrame = 0;
+    private Vector3 tempVector1;
+    private Vector3 tempVector2;
+    private Vector2 graphScrollerPos;
+    private float maxFpsValue;
+    private float minFpsValue;
+    private float maxMemoryValue;
+    private float minMemoryValue;
 
-    void drawGraph()
+    private void drawGraph()
     {
 
         graphRect = stackRect;
@@ -1612,7 +1618,7 @@ public class Reporter : MonoBehaviour
         //GUI.EndGroup();
     }
 
-    void drawStack()
+    private void drawStack()
     {
 
         if (selectedLog != null)
@@ -1734,11 +1740,12 @@ public class Reporter : MonoBehaviour
 
     }
 
-    List<Vector2> gestureDetector = new List<Vector2>();
-    Vector2 gestureSum = Vector2.zero;
-    float gestureLength = 0;
-    int gestureCount = 0;
-    bool isGestureDone()
+    private List<Vector2> gestureDetector = new List<Vector2>();
+    private Vector2 gestureSum = Vector2.zero;
+    private float gestureLength = 0;
+    private int gestureCount = 0;
+
+    private bool isGestureDone()
     {
         if (Application.platform == RuntimePlatform.Android ||
             Application.platform == RuntimePlatform.IPhonePlayer)
@@ -1816,8 +1823,9 @@ public class Reporter : MonoBehaviour
         return false;
     }
 
-    float lastClickTime = -1;
-    bool isDoubleClickDone()
+    private float lastClickTime = -1;
+
+    private bool isDoubleClickDone()
     {
         if (Application.platform == RuntimePlatform.Android ||
            Application.platform == RuntimePlatform.IPhonePlayer)
@@ -1865,10 +1873,11 @@ public class Reporter : MonoBehaviour
     }
 
     //calculate  pos of first click on screen
-    Vector2 startPos;
+    private Vector2 startPos;
 
-    Vector2 downPos;
-    Vector2 getDownPos()
+    private Vector2 downPos;
+
+    private Vector2 getDownPos()
     {
         if (Application.platform == RuntimePlatform.Android ||
            Application.platform == RuntimePlatform.IPhonePlayer)
@@ -1894,8 +1903,9 @@ public class Reporter : MonoBehaviour
     }
     //calculate drag amount , this is used for scrolling
 
-    Vector2 mousePosition;
-    Vector2 getDrag()
+    private Vector2 mousePosition;
+
+    private Vector2 getDrag()
     {
 
         if (Application.platform == RuntimePlatform.Android ||
@@ -1922,7 +1932,7 @@ public class Reporter : MonoBehaviour
     }
 
     //calculate the start index of visible log
-    void calculateStartIndex()
+    private void calculateStartIndex()
     {
         startIndex = (int)(scrollPosition.y / size.y);
         startIndex = Mathf.Clamp(startIndex, 0, currentLog.Count);
@@ -1939,7 +1949,7 @@ public class Reporter : MonoBehaviour
 	float lastUpdate2 = 0;
 #endif
 
-    void doShow()
+    private void doShow()
     {
         show = true;
         currentView = ReportView.Logs;
@@ -1956,7 +1966,7 @@ public class Reporter : MonoBehaviour
         }
     }
 
-    void Update()
+    private void Update()
     {
         fpsText = fps.ToString("0.000");
         gcTotalMemory = (((float)System.GC.GetTotalMemory(false)) / 1024 / 1024);
@@ -2021,12 +2031,12 @@ public class Reporter : MonoBehaviour
     }
 
 
-    void CaptureLog(string condition, string stacktrace, LogType type)
+    private void CaptureLog(string condition, string stacktrace, LogType type)
     {
         AddLog(condition, stacktrace, type);
     }
 
-    void AddLog(string condition, string stacktrace, LogType type)
+    private void AddLog(string condition, string stacktrace, LogType type)
     {
         float memUsage = 0f;
         string _condition = "";
@@ -2142,8 +2152,9 @@ public class Reporter : MonoBehaviour
         }
     }
 
-    List<Log> threadedLogs = new List<Log>();
-    void CaptureLogThread(string condition, string stacktrace, LogType type)
+    private List<Log> threadedLogs = new List<Log>();
+
+    private void CaptureLogThread(string condition, string stacktrace, LogType type)
     {
         Log log = new Log() { condition = condition, stacktrace = stacktrace, logType = (_LogType)type };
         lock (threadedLogs)
@@ -2165,7 +2176,7 @@ public class Reporter : MonoBehaviour
     }
 #endif
     //new scene is loaded
-    void _OnLevelWasLoaded(Scene _null1, LoadSceneMode _null2)
+    private void _OnLevelWasLoaded(Scene _null1, LoadSceneMode _null2)
     {
         if (clearOnNewSceneLoaded)
             clear();
@@ -2180,7 +2191,7 @@ public class Reporter : MonoBehaviour
     }
 
     //save user config
-    void OnApplicationQuit()
+    private void OnApplicationQuit()
     {
         PlayerPrefs.SetInt("Reporter_currentView", (int)currentView);
         PlayerPrefs.SetInt("Reporter_show", (show == true) ? 1 : 0);
@@ -2208,7 +2219,7 @@ public class Reporter : MonoBehaviour
     }
 
     //read build information 
-    IEnumerator readInfo()
+    private IEnumerator readInfo()
     {
         string prefFile = "build_info";
         string url = prefFile;

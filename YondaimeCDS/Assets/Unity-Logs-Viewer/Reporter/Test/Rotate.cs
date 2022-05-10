@@ -3,14 +3,14 @@ using System.Collections;
 
 public class Rotate : MonoBehaviour
 {
-	Vector3 angle;
+	private Vector3 angle;
 
-	void Start()
+	private void Start()
 	{
 		angle = transform.eulerAngles;
 	}
 
-	void Update()
+	private void Update()
 	{
 		angle.y += Time.deltaTime * 100;
 		transform.eulerAngles = angle;

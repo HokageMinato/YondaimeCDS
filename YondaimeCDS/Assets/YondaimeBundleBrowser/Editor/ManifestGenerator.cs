@@ -13,33 +13,38 @@ namespace YondaimeCDS
        
         public static void GenerateManifests(CompatibilityAssetBundleManifest buildManifest,string outputDirectory)
         {
-            string bundleManifest = IOUtils.Serialize(buildManifest);
-            string manifestHash = ComputeHash(IOUtils.StringToBytes(bundleManifest));
+            string serializedBundleManifest = IOUtils.Serialize(buildManifest);
+            string manifestHash = ComputeHash(IOUtils.StringToBytes(serializedBundleManifest));
             
-            SerializedAssetManifest manifest = JsonUtility.FromJson<SerializedAssetManifest>(bundleManifest);
+            SerializedAssetManifest manifest = JsonUtility.FromJson<SerializedAssetManifest>(serializedBundleManifest);
             manifest.bit = manifestHash;
-            bundleManifest = IOUtils.Serialize(manifest);
+            serializedBundleManifest = IOUtils.Serialize(manifest);
+
 
             ScriptManifest scanifest = GetScriptManifest();
-            string scriptManifest = IOUtils.Serialize(scanifest);
-            string scriptManifestHash = ComputeHash(IOUtils.StringToBytes(scriptManifest));
+            string serializedScriptManifest = IOUtils.Serialize(scanifest);
+            string scriptManifestHash = ComputeHash(IOUtils.StringToBytes(serializedScriptManifest));
             scanifest.bit = scriptManifestHash;
+            serializedScriptManifest = IOUtils.Serialize(scanifest);
 
 
-
-            scriptManifest = IOUtils.Serialize(scanifest);
-
-            byte[] manifestData = IOUtils.StringToBytes(bundleManifest);
-            byte[] scriptManifestData = IOUtils.StringToBytes(scriptManifest);
-
-            string combinedHash = manifestHash + scriptManifestHash;
-            byte[] hashData = IOUtils.StringToBytes(combinedHash);
+            
+            HashManifest hashManifest = new HashManifest();
+            hashManifest.ScriptHash = scanifest.bit;
+            hashManifest.AssetHash = manifest.bit;
+            string serializedHashManifest = IOUtils.Serialize(hashManifest);
 
 
-            File.WriteAllBytes(Path.Combine(outputDirectory, IOUtils.MANIFEST), manifestData);
-            File.WriteAllBytes(Path.Combine(outputDirectory, IOUtils.MANIFEST_HASH), hashData);
-            File.WriteAllBytes(Path.Combine(outputDirectory, IOUtils.SCRIPT_MANIFEST), scriptManifestData);
-          //File.Delete(Path.Combine(outputDirectory, "Android.manifest"));
+            byte[] manifestData = IOUtils.StringToBytes(serializedBundleManifest);
+            byte[] scriptManifestData = IOUtils.StringToBytes(serializedScriptManifest);
+            byte[] hashManifestData = IOUtils.StringToBytes(serializedHashManifest);
+
+
+            File.WriteAllBytes(Path.Combine(outputDirectory, Config.ASSET_MANIFEST), manifestData);
+            File.WriteAllBytes(Path.Combine(outputDirectory, Config.MANIFEST_HASH), hashManifestData);
+            File.WriteAllBytes(Path.Combine(outputDirectory, Config.SCRIPT_MANIFEST), scriptManifestData);
+            File.Delete(Path.Combine(outputDirectory, "Android.manifest"));
+            File.Delete(Path.Combine(outputDirectory, "buildlogtep.json"));
         }
 
         
@@ -50,7 +55,7 @@ namespace YondaimeCDS
             int totalAssetBundleCount = assetBundles.Length;
 
             ScriptManifest mf = new ScriptManifest(totalAssetBundleCount);
-            BundleScriptHashTuple[] manifest = mf.bundleWiseScriptHashes;
+            BundleScriptHashTuple[] manifest = mf.BundleWiseScriptHashes;
 
             for (int i = 0; i < totalAssetBundleCount; i++)
             {

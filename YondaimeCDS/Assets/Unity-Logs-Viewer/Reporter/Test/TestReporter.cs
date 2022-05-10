@@ -34,19 +34,19 @@ public class TestReporter : MonoBehaviour
 	public int logTestCount = 100;
 	public int threadLogTestCount = 100;
 	public bool logEverySecond = true;
-	int currentLogTestCount;
-	Reporter reporter;
-	GUIStyle style;
-	Rect rect1;
-	Rect rect2;
-	Rect rect3;
-	Rect rect4;
-	Rect rect5;
-	Rect rect6;
+	private int currentLogTestCount;
+	private Reporter reporter;
+	private GUIStyle style;
+	private Rect rect1;
+	private Rect rect2;
+	private Rect rect3;
+	private Rect rect4;
+	private Rect rect5;
+	private Rect rect6;
 
-	Thread thread;
+	private Thread thread;
 
-	void Start()
+	private void Start()
 	{
 		Application.runInBackground = true;
 
@@ -91,12 +91,12 @@ public class TestReporter : MonoBehaviour
 		thread.Start();
 	}
 
-	void OnDestroy()
+	private void OnDestroy()
 	{
 		thread.Abort();
 	}
 
-	void threadLogTest()
+	private void threadLogTest()
 	{
 		for (int i = 0; i < threadLogTestCount; i++) {
 			Debug.Log("Test Log from Thread");
@@ -105,8 +105,9 @@ public class TestReporter : MonoBehaviour
 		}
 	}
 
-	float elapsed;
-	void Update()
+	private float elapsed;
+
+	private void Update()
 	{
 		int drawn = 0;
 		while (currentLogTestCount < logTestCount && drawn < 10) {
@@ -124,7 +125,7 @@ public class TestReporter : MonoBehaviour
 		}
 	}
 
-	void OnGUI()
+	private void OnGUI()
 	{
 		if (reporter && !reporter.show) {
 			GUI.Label(rect1, "Draw circle on screen to show logs", style);

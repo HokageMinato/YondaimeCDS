@@ -3,13 +3,14 @@ using System.Collections;
 
 public class ReporterGUI : MonoBehaviour
 {
-	Reporter reporter;
-	void Awake()
+	private Reporter reporter;
+
+	private void Awake()
 	{
 		reporter = gameObject.GetComponent<Reporter>();
 	}
 
-	void OnGUI()
+	private void OnGUI()
 	{
 		reporter.OnGUIDraw();
 	}

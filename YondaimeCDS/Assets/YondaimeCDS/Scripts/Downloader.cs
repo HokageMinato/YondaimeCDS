@@ -9,15 +9,16 @@ namespace YondaimeCDS
 
     public static class Downloader
     {
-        public static ContentUpdateDetector configUpdaterInstance;
+        public static ContentUpdateDetector ConfigUpdaterInstance;
+        public static SerializedAssetManifest LocalAssetManifest;
+        public static ScriptManifest LocalScriptManifest;
+        public static HashManifest LocalHashManifest;
         
-        public static SerializedAssetManifest localAssetManifest;
-        public static ScriptManifest localScriptManifest;
         
-
-        public static void Initialize() 
+        public static void Initialize(ScriptManifest localScriptManifest)
         {
-            localAssetManifest = IOUtils.Deserialize<SerializedAssetManifest>(IOUtils.LoadFromLocalDisk())
+            LocalScriptManifest = localScriptManifest;
+            LoadLocalManifests();
         }
 
         public static async Task<List<string>> CheckForContentUpdate() 
@@ -25,9 +26,9 @@ namespace YondaimeCDS
            return await new ContentUpdateDetector().GetUpdates();
         }
 
-        public static async Task DownloadBundle(string assetName, Action<float> OnProgressChanged=null) 
+        public static async Task DownloadBundle(string assetName, Action<float> onProgressChanged=null) 
         { 
-           await new DownloadHandler().DownloadBundle(assetName,OnProgressChanged);
+           await new DownloadHandler().DownloadBundle(assetName,onProgressChanged);
         }
         
         public static async Task<double> CalculateRemainingDownloadSize(string assetName) 
@@ -36,7 +37,31 @@ namespace YondaimeCDS
         }
 
 
-       
+        public static void LoadLocalManifests() 
+        {
+            LocalAssetManifest = IOUtils.LoadFromLocalDisk<SerializedAssetManifest>(Config.ASSET_MANIFEST);
+            LocalHashManifest = IOUtils.LoadFromLocalDisk<HashManifest>(Config.MANIFEST_HASH);
+        }
+
+        
+         public static void SetStatusDownloaded(string bundleName)
+         {
+             Debug.Log(LocalAssetManifest == null);
+             Debug.Log(LocalAssetManifest.PendingUpdates == null);
+             LocalAssetManifest.PendingUpdates.Remove(bundleName);
+             IOUtils.SaveToLocalDisk(LocalAssetManifest,Config.ASSET_MANIFEST);
+         }
+
+        public static void CreateHashManifestDiskContents(HashManifest serverHashManifest)
+        {
+            LocalHashManifest = serverHashManifest;
+            IOUtils.SaveToLocalDisk(LocalHashManifest,Config.MANIFEST_HASH);
+        }
+        
+        public static void WriteAssetManifestToDisk()
+        {
+            IOUtils.SaveToLocalDisk(LocalAssetManifest,Config.ASSET_MANIFEST);
+        }
 
     }
 

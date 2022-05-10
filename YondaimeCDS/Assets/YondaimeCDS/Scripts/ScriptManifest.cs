@@ -7,9 +7,14 @@ namespace YondaimeCDS {
     [Serializable]
     public class ScriptManifest
     {
-        public BundleScriptHashTuple[] bundleWiseScriptHashes;
-        public List<string> allScriptHashes = new List<string>();
+        [SerializeField] private BundleScriptHashTuple[] bundleWiseScriptHashes;
+        [SerializeField] private List<string> allScriptHashes = new List<string>();
         public string bit;
+
+        #if UNITY_EDITOR
+        public BundleScriptHashTuple[] BundleWiseScriptHashes => bundleWiseScriptHashes;
+        
+        #endif
 
         public ScriptManifest(int entryCount)
         {
@@ -17,10 +22,11 @@ namespace YondaimeCDS {
         }
 
         public ScriptManifest()
-        { }
+        {
+        }
 
 
-        public void AddScriptHashes(List<string> scriptHashes) 
+        public void AddScriptHashes(List<string> scriptHashes)
         {
             for (int i = 0; i < scriptHashes.Count; i++)
             {
@@ -29,8 +35,57 @@ namespace YondaimeCDS {
                     allScriptHashes.Add(currentScriptHash);
             }
         }
+
+
+        public List<string> GetCompatibleBundleList(ScriptManifest serverScriptManifest)
+        {
+            List<string> compatibleBundles = ExtractBundleNames(serverScriptManifest);
+
+            BundleScriptHashTuple[] serverManifestData = serverScriptManifest.bundleWiseScriptHashes;
+            for (int i = 0; i < serverManifestData.Length; i++)
+            {
+                if (!IsBundleCompitable(serverManifestData[i]))
+                    compatibleBundles.Remove(serverManifestData[i].BundleName);
+            }
+
+            return compatibleBundles;
+        }
+
+
+
+        private bool IsBundleCompitable(BundleScriptHashTuple serverBundleScriptData)
+        {
+            List<string> bundleScripts = serverBundleScriptData.BundleSciptHashes;
+
+            for (int i = 0; i < bundleScripts.Count; i++)
+            {
+                if (!allScriptHashes.Contains(bundleScripts[i]))
+                {
+                    Debug.Log($"Script incompatibility detected for {serverBundleScriptData.BundleName}");
+                    return false;
+                }
+            }
+
+            return true;
+        }
+
+        private List<string> ExtractBundleNames(ScriptManifest serverScriptManifest)
+        {
+            List<string> compatibleBundles = new List<string>();
+             BundleScriptHashTuple[] tuples = serverScriptManifest.bundleWiseScriptHashes;
+            
+            for (int i = 0; i < tuples.Length; i++) 
+            {
+                compatibleBundles.Add(tuples[i].BundleName);
+            }
+
+            return compatibleBundles;
+        }
+
     }
 
+    
+    
     [Serializable]
     public class BundleScriptHashTuple
     {

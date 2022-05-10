@@ -18,9 +18,12 @@ namespace YondaimeCDS
             _onProgressChanged = OnProgressChanged;
 
             byte[] bundleContent = await DownloadContent(bundleName);
-            
+
             if (bundleContent != null)
+            {
                 SaveAssetBundleToDisk(bundleName, bundleContent);
+                Downloader.SetStatusDownloaded(bundleName);
+            }
 
             _onProgressChanged = null;
         }
@@ -42,7 +45,6 @@ namespace YondaimeCDS
 
                 if (downloadRequest.result == UnityWebRequest.Result.Success)
                 {
-                    Downloader.configUpdaterInstance.SetStatusDownloaded(bundleName);
                     return downloadRequest.downloadHandler.data;
                 }
 

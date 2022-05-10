@@ -9,7 +9,8 @@ namespace YondaimeCDS
     {
         public string remoteURL;
         public string localStorageFolderName = string.Empty;
-
+        public ScriptManifestAsset ScriptManifestAsset;
+        
         public string StoragePath
         {
             get
@@ -31,7 +32,7 @@ namespace YondaimeCDS
         public static string REMOTE_URL;
 
         public const string MANIFEST_HASH = "manifestHash";
-        public const string MANIFEST = "manifest";
+        public const string ASSET_MANIFEST = "manifest";
         public const string SCRIPT_MANIFEST = "scriptManifest";
     }
 

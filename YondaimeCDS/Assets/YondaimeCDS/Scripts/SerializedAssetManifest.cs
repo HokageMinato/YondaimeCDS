@@ -24,8 +24,28 @@ namespace YondaimeCDS {
 
         private Dictionary<string, BundleDetails> m_Details;
 
-        public void GenerateUpdateList(SerializedAssetManifest serverManifest,ref List<string> scriptFilteredBundleList) 
-        { 
+        public void GenerateUpdateList(SerializedAssetManifest serverManifest,bool scriptUpdatesPresent,ref List<string> scriptFilteredBundleList)
+        {
+                //TODO refactor later.
+            if (!scriptUpdatesPresent)
+            {
+                List<string> keys = serverManifest.Keys;
+                
+                for (int i = 0; i < keys.Count;  i++)
+                {
+                    string bundleName = keys[i];
+                    Hash128 serverHashValue = serverManifest.m_Details[bundleName].Hash;
+                    Hash128 localHashValue = m_Details[bundleName].Hash;
+
+                    if (!serverHashValue.Equals(localHashValue)) 
+                    {
+                        scriptFilteredBundleList.Add(bundleName);
+                    }
+                }
+                
+                return;
+            }
+
             for (int i = 0; i < scriptFilteredBundleList.Count;)
             {
                 string bundleName = scriptFilteredBundleList[i];
@@ -43,7 +63,7 @@ namespace YondaimeCDS {
 
         }
 
-        public void UpdateWithServerManifest(SerializedAssetManifest serverManifest, ref List<string> scriptFilteredBundleList)
+        public void UpdateManifestData(SerializedAssetManifest serverManifest, ref List<string> scriptFilteredBundleList)
         {
             PendingUpdates.AddRange(scriptFilteredBundleList);
             Dictionary<string, BundleDetails> updates = serverManifest.m_Details;
@@ -77,10 +97,8 @@ namespace YondaimeCDS {
             }
         }
 
-        private int GetEntryCount() 
-        {
-           return Mathf.Min(m_Keys.Count, m_Values.Count);
-        }
+        
+        
 
     }
 

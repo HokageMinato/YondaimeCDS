@@ -3,13 +3,14 @@ using System.Collections;
 
 public class ReporterMessageReceiver : MonoBehaviour
 {
-	Reporter reporter;
-	void Start()
+	private Reporter reporter;
+
+	private void Start()
 	{
 		reporter = gameObject.GetComponent<Reporter>();
 	}
 
-	void OnPreStart()
+	private void OnPreStart()
 	{
 		//To Do : this method is called before initializing reporter, 
 		//we can for example check the resultion of our device ,then change the size of reporter
@@ -24,17 +25,17 @@ public class ReporterMessageReceiver : MonoBehaviour
 		reporter.UserData = "Put user date here like his account to know which user is playing on this device";
 	}
 
-	void OnHideReporter()
+	private void OnHideReporter()
 	{
 		//TO DO : resume your game
 	}
 
-	void OnShowReporter()
+	private void OnShowReporter()
 	{
 		//TO DO : pause your game and disable its GUI
 	}
 
-	void OnLog(Reporter.Log log)
+	private void OnLog(Reporter.Log log)
 	{
 		//TO DO : put you custom code 
 	}
