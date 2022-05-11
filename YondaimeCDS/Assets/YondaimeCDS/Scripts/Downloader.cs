@@ -13,12 +13,14 @@ namespace YondaimeCDS
         public static ScriptManifest LocalScriptManifest;
         public static HashManifest LocalHashManifest;
         public static bool IsInitialzied;
-        
-        public static void Initialize(ScriptManifest localScriptManifest)
+        private static DownloaderConfig _config;
+
+        public static void Initialize(DownloaderConfig config)
         {
-            LocalScriptManifest = localScriptManifest;
-            IsInitialzied = true;
+            _config = config;
+            InitializeConfig();
             LoadLocalManifests();
+            IsInitialzied = true;
         }
 
         public static async Task<List<string>> CheckForContentUpdate() 
@@ -36,13 +38,7 @@ namespace YondaimeCDS
            return await new DownloadTracker().GetRemainingDownloadSize(assetName);
         }
 
-
-        private static void LoadLocalManifests() 
-        {
-            LocalAssetManifest = IOUtils.LoadFromLocalDisk<SerializedAssetManifest>(Config.ASSET_MANIFEST);
-            LocalHashManifest = IOUtils.LoadFromLocalDisk<HashManifest>(Config.MANIFEST_HASH);
-        }
-
+        
         public static void UpdateHashManifestDiskContents(HashManifest serverHashManifest)
         {
             LocalHashManifest = serverHashManifest;
@@ -53,6 +49,22 @@ namespace YondaimeCDS
         {
             IOUtils.SaveObjectToLocalDisk(LocalAssetManifest,Config.ASSET_MANIFEST);
         }
+
+        
+        private static void LoadLocalManifests()
+        {
+            LocalScriptManifest = IOUtils.Deserialize<ScriptManifest>(_config.serializedScriptManifest);
+            LocalAssetManifest = IOUtils.LoadFromLocalDisk<SerializedAssetManifest>(Config.ASSET_MANIFEST);
+            LocalHashManifest = IOUtils.LoadFromLocalDisk<HashManifest>(Config.MANIFEST_HASH);
+        }
+
+        private static void InitializeConfig()
+        {
+            Config.STORAGE_PATH = _config.StoragePath;
+            Config.REMOTE_URL = _config.remoteURL;
+        }
+
+       
 
     }
 

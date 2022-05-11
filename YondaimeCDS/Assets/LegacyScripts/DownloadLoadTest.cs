@@ -30,7 +30,7 @@ public class DownloadLoadTest : CustomBehaviour
     private IEnumerator Fetcher() 
     { Debug.Log("st2");
         
-        Downloader.Initialize(downloaderConfig.ScriptManifestAsset.GetManifest());
+        Downloader.Initialize(downloaderConfig);
         
         Config.REMOTE_URL = downloaderConfig.remoteURL;
         Config.STORAGE_PATH = downloaderConfig.StoragePath;

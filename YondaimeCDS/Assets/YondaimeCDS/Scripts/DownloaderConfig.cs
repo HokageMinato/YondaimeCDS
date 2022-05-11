@@ -9,7 +9,7 @@ namespace YondaimeCDS
     {
         public string remoteURL;
         public string localStorageFolderName = string.Empty;
-        public ScriptManifestAsset ScriptManifestAsset;
+        public string serializedScriptManifest;
         
         public string StoragePath
         {
