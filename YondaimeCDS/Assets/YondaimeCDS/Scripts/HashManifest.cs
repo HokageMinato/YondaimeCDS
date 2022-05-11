@@ -7,7 +7,7 @@ namespace YondaimeCDS  {
     public class HashManifest 
     {
         public string AssetHash;
-        public string ScriptHash;
+        //public string ScriptHash;
     }
 
 }

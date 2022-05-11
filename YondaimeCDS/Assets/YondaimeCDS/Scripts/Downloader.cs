@@ -9,15 +9,15 @@ namespace YondaimeCDS
 
     public static class Downloader
     {
-        public static ContentUpdateDetector ConfigUpdaterInstance;
         public static SerializedAssetManifest LocalAssetManifest;
         public static ScriptManifest LocalScriptManifest;
         public static HashManifest LocalHashManifest;
-        
+        public static bool IsInitialzied;
         
         public static void Initialize(ScriptManifest localScriptManifest)
         {
             LocalScriptManifest = localScriptManifest;
+            IsInitialzied = true;
             LoadLocalManifests();
         }
 
@@ -37,30 +37,21 @@ namespace YondaimeCDS
         }
 
 
-        public static void LoadLocalManifests() 
+        private static void LoadLocalManifests() 
         {
             LocalAssetManifest = IOUtils.LoadFromLocalDisk<SerializedAssetManifest>(Config.ASSET_MANIFEST);
             LocalHashManifest = IOUtils.LoadFromLocalDisk<HashManifest>(Config.MANIFEST_HASH);
         }
 
-        
-         public static void SetStatusDownloaded(string bundleName)
-         {
-             Debug.Log(LocalAssetManifest == null);
-             Debug.Log(LocalAssetManifest.PendingUpdates == null);
-             LocalAssetManifest.PendingUpdates.Remove(bundleName);
-             IOUtils.SaveToLocalDisk(LocalAssetManifest,Config.ASSET_MANIFEST);
-         }
-
-        public static void CreateHashManifestDiskContents(HashManifest serverHashManifest)
+        public static void UpdateHashManifestDiskContents(HashManifest serverHashManifest)
         {
             LocalHashManifest = serverHashManifest;
-            IOUtils.SaveToLocalDisk(LocalHashManifest,Config.MANIFEST_HASH);
+            IOUtils.SaveObjectToLocalDisk(LocalHashManifest,Config.MANIFEST_HASH);
         }
         
-        public static void WriteAssetManifestToDisk()
+        public static void UpdateAssetManifestDiskContents()
         {
-            IOUtils.SaveToLocalDisk(LocalAssetManifest,Config.ASSET_MANIFEST);
+            IOUtils.SaveObjectToLocalDisk(LocalAssetManifest,Config.ASSET_MANIFEST);
         }
 
     }

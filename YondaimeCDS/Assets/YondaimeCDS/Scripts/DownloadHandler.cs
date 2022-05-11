@@ -11,18 +11,25 @@ namespace YondaimeCDS
     public class DownloadHandler 
     {
         private Action<float> _onProgressChanged;
+        private string _bundleName;
         
-        
-        public async Task DownloadBundle(string bundleName,Action<float> OnProgressChanged=null)
+        private static SerializedAssetManifest LocalAssetManifest
         {
-            _onProgressChanged = OnProgressChanged;
+            get { return Downloader.LocalAssetManifest; }
+        }
+
+        public async Task DownloadBundle(string bundleName,Action<float> onProgressChanged=null)
+        {
+            _onProgressChanged = onProgressChanged;
+            _bundleName = bundleName;
 
             byte[] bundleContent = await DownloadContent(bundleName);
+            bool downloadSuccess = bundleContent != null;
 
-            if (bundleContent != null)
+            if (downloadSuccess)
             {
                 SaveAssetBundleToDisk(bundleName, bundleContent);
-                Downloader.SetStatusDownloaded(bundleName);
+                UpdateLocalManifest();
             }
 
             _onProgressChanged = null;
@@ -58,14 +65,19 @@ namespace YondaimeCDS
 
         private void SaveAssetBundleToDisk(string fileName, byte[] assetBytes)
         {
-            IOUtils.SaveToLocalDisk(assetBytes, fileName);
+            IOUtils.SaveRawContentToLocalDisk(assetBytes, fileName);
         }
 
-        
+        private void UpdateLocalManifest()
+        {
+            LocalAssetManifest.PendingUpdates.Remove(_bundleName);
+            Downloader.UpdateAssetManifestDiskContents();
+        }
 
 
-      
-        
+
+
+
 
     }
 

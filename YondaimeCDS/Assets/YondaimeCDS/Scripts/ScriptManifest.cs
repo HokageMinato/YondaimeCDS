@@ -9,7 +9,7 @@ namespace YondaimeCDS {
     {
         [SerializeField] private BundleScriptHashTuple[] bundleWiseScriptHashes;
         [SerializeField] private List<string> allScriptHashes = new List<string>();
-        public string bit;
+        //public string bit;
 
         #if UNITY_EDITOR
         public BundleScriptHashTuple[] BundleWiseScriptHashes => bundleWiseScriptHashes;

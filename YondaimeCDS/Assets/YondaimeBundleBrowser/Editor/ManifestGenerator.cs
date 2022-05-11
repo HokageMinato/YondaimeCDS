@@ -17,21 +17,21 @@ namespace YondaimeCDS
             string manifestHash = ComputeHash(IOUtils.StringToBytes(serializedBundleManifest));
             
             SerializedAssetManifest manifest = JsonUtility.FromJson<SerializedAssetManifest>(serializedBundleManifest);
-            manifest.bit = manifestHash;
+            //manifest.bit = manifestHash;
             serializedBundleManifest = IOUtils.Serialize(manifest);
 
 
-            ScriptManifest scanifest = GetScriptManifest();
-            string serializedScriptManifest = IOUtils.Serialize(scanifest);
-            string scriptManifestHash = ComputeHash(IOUtils.StringToBytes(serializedScriptManifest));
-            scanifest.bit = scriptManifestHash;
-            serializedScriptManifest = IOUtils.Serialize(scanifest);
+            ScriptManifest scriptManifest = GetScriptManifest();
+            string serializedScriptManifest = IOUtils.Serialize(scriptManifest);
+            // string scriptManifestHash = ComputeHash(IOUtils.StringToBytes(serializedScriptManifest));
+            // scanifest.bit = scriptManifestHash;
+            // serializedScriptManifest = IOUtils.Serialize(scanifest);
 
 
             
             HashManifest hashManifest = new HashManifest();
-            hashManifest.ScriptHash = scanifest.bit;
-            hashManifest.AssetHash = manifest.bit;
+            //hashManifest.ScriptHash = scanifest.bit;
+            hashManifest.AssetHash = manifestHash;//manifest.bit;
             string serializedHashManifest = IOUtils.Serialize(hashManifest);
 
 

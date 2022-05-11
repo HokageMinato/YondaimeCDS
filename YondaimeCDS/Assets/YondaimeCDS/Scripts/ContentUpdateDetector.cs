@@ -47,27 +47,26 @@ namespace YondaimeCDS
 
         public async Task<List<string>> GetUpdates()
         {
-            if (IsUnitialized())
+            if (!IsInitialized())
                 return null;
             
             await DownloadManifestHash();
             
-            if (ScriptUpdateDetected())
-            {
-                await DownloadScriptManifest();
-                FilterScriptIncompitableBundles();
-            }
+            if (!AssetManifestUpdateDetected()) 
+                return LocalAssetManifest.PendingUpdates;
+           
+            await DownloadScriptManifest();
+            FilterScriptIncompitableBundles();
 
-            if (LocalAssetManifest == null || AssetManifestUpdateDetected())
-            {
-                await DownloadAssetManifest();
-                FilterNonUpdatedBundles();
+            await DownloadAssetManifest();
+            CheckForBundleUpdates();
 
-                if (BundleUpdatesPresent())
-                    UpdateLocalAssetManifest();
+            if (BundleUpdatesPresent())
+            {
+                UpdateLocalAssetManifest();
+                UpdateLocalHashManifest();
             }
-             
-            //update hash.. asset value only..
+            
             return LocalAssetManifest.PendingUpdates;
         }
 
@@ -86,18 +85,26 @@ namespace YondaimeCDS
         
         #region UPDATE_CHECK
 
-        private bool ScriptUpdateDetected()
+        //private bool ScriptUpdateDetected()
+        //{
+        //    return _serverHashManifest.ScriptHash != LocalHashManifest.ScriptHash;
+        //}
+
+        private bool LocalAssetManifestPresent()
         {
-            return _serverHashManifest.ScriptHash != LocalHashManifest.ScriptHash;
+            return LocalAssetManifest != null;
         }
 
-        private bool IsUnitialized()
+        private bool IsInitialized()
         {
-            return LocalHashManifest == null;
+            return Downloader.IsInitialzied;
         }
 
         private bool AssetManifestUpdateDetected()
         {
+            if (!LocalAssetManifestPresent())
+                return true;
+            
             return _serverHashManifest.AssetHash != LocalHashManifest.AssetHash;
         }
 
@@ -111,9 +118,9 @@ namespace YondaimeCDS
         
         #region HASH_MANIFEST_MANAGEMENT
 
-        private void CreateLocalHashManifest()
+        private void UpdateLocalHashManifest()
         {
-            Downloader.CreateHashManifestDiskContents(_serverHashManifest);
+            Downloader.UpdateHashManifestDiskContents(_serverHashManifest);
         }
 
         #endregion
@@ -135,10 +142,10 @@ namespace YondaimeCDS
             _serverAssetManifest = IOUtils.Deserialize<SerializedAssetManifest>(IOUtils.BytesToString(serverManifestBuffer));
         }
         
-        private void FilterNonUpdatedBundles()
+        private void CheckForBundleUpdates()
         {
-            bool scriptUpdatesPresent = ScriptUpdateDetected();
-            LocalAssetManifest.GenerateUpdateList(_serverAssetManifest, scriptUpdatesPresent, ref _compatibleBundles);
+            if(LocalAssetManifestPresent())
+                LocalAssetManifest.GenerateUpdateList(_serverAssetManifest, ref _compatibleBundles);
         }
 
         private void UpdateLocalAssetManifest()
@@ -147,7 +154,7 @@ namespace YondaimeCDS
                 LocalAssetManifest = _serverAssetManifest;
             
             LocalAssetManifest.UpdateManifestData(_serverAssetManifest, ref _compatibleBundles);
-            Downloader.WriteAssetManifestToDisk();
+            Downloader.UpdateAssetManifestDiskContents();
         }
 
         #endregion

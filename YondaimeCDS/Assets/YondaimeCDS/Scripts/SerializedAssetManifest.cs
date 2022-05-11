@@ -17,34 +17,34 @@ namespace YondaimeCDS {
         [SerializeField]
         private List<string> pendingUpdates = new List<string>();
 
-        public string bit;
+        //public string bit;
 
         public List<string> PendingUpdates { get { return pendingUpdates; } }
         public List<string> Keys { get { return m_Keys; } }
 
         private Dictionary<string, BundleDetails> m_Details;
 
-        public void GenerateUpdateList(SerializedAssetManifest serverManifest,bool scriptUpdatesPresent,ref List<string> scriptFilteredBundleList)
+        public void GenerateUpdateList(SerializedAssetManifest serverManifest,ref List<string> scriptFilteredBundleList)
         {
                 //TODO refactor later.
-            if (!scriptUpdatesPresent)
-            {
-                List<string> keys = serverManifest.Keys;
-                
-                for (int i = 0; i < keys.Count;  i++)
-                {
-                    string bundleName = keys[i];
-                    Hash128 serverHashValue = serverManifest.m_Details[bundleName].Hash;
-                    Hash128 localHashValue = m_Details[bundleName].Hash;
-
-                    if (!serverHashValue.Equals(localHashValue)) 
-                    {
-                        scriptFilteredBundleList.Add(bundleName);
-                    }
-                }
-                
-                return;
-            }
+            // if (!scriptUpdatesPresent)
+            // {
+            //     List<string> keys = serverManifest.Keys;
+            //     
+            //     for (int i = 0; i < keys.Count;  i++)
+            //     {
+            //         string bundleName = keys[i];
+            //         Hash128 serverHashValue = serverManifest.m_Details[bundleName].Hash;
+            //         Hash128 localHashValue = m_Details[bundleName].Hash;
+            //
+            //         if (!serverHashValue.Equals(localHashValue)) 
+            //         {
+            //             scriptFilteredBundleList.Add(bundleName);
+            //         }
+            //     }
+            //     
+            //     return;
+            // }
 
             for (int i = 0; i < scriptFilteredBundleList.Count;)
             {
@@ -61,6 +61,7 @@ namespace YondaimeCDS {
                 i++;
             }
 
+            Debug.Log("No bundle updates");
         }
 
         public void UpdateManifestData(SerializedAssetManifest serverManifest, ref List<string> scriptFilteredBundleList)
@@ -73,6 +74,7 @@ namespace YondaimeCDS {
                 m_Details[scriptFilteredBundleList[i]] = updates[scriptFilteredBundleList[i]];
                 Debug.Log($"updated details for {scriptFilteredBundleList[i]}");
             }
+            
         }
 
         public void OnAfterDeserialize()
