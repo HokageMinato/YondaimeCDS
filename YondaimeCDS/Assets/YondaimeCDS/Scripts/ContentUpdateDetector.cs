@@ -51,10 +51,13 @@ namespace YondaimeCDS
                 return null;
             
             await DownloadManifestHash();
-            
-            if (!AssetManifestUpdateDetected()) 
+
+            if (!AssetManifestUpdateDetected())
+            {
+                Debug.Log("No updates,Pending updates include");
                 return LocalAssetManifest.PendingUpdates;
-           
+            }
+
             await DownloadScriptManifest();
             FilterScriptIncompitableBundles();
 
