@@ -24,18 +24,17 @@ namespace YondaimeCDS
 
         private static ScriptManifest LocalScriptManifest
         {
-            get { return Downloader.LocalScriptManifest; }
+            get { return ManifestTracker.LocalScriptManifest; }
         }
 
         private static HashManifest LocalHashManifest
         {
-            get { return Downloader.LocalHashManifest; }
+            get { return ManifestTracker.LocalHashManifest; }
         }
 
         private static SerializedAssetManifest LocalAssetManifest
         {
-            get { return Downloader.LocalAssetManifest; }
-            set => Downloader.LocalAssetManifest = value;
+            get { return ManifestTracker.LocalAssetManifest; }
         }
 
         private ScriptManifest _serverScriptManifest;
@@ -47,9 +46,6 @@ namespace YondaimeCDS
 
         public async Task<List<string>> GetUpdates()
         {
-            if (!IsInitialized())
-                return null;
-            
             await DownloadManifestHash();
 
             if (!AssetManifestUpdateDetected())
@@ -98,11 +94,6 @@ namespace YondaimeCDS
             return LocalAssetManifest != null;
         }
 
-        private bool IsInitialized()
-        {
-            return Downloader.IsInitialzied;
-        }
-
         private bool AssetManifestUpdateDetected()
         {
             if (!LocalAssetManifestPresent())
@@ -123,7 +114,7 @@ namespace YondaimeCDS
 
         private void UpdateLocalHashManifest()
         {
-            Downloader.UpdateHashManifestDiskContents(_serverHashManifest);
+            ManifestTracker.UpdateHashManifestDiskContents(_serverHashManifest);
         }
 
         #endregion
@@ -153,11 +144,11 @@ namespace YondaimeCDS
 
         private void UpdateLocalAssetManifest()
         {
-            if (LocalAssetManifest == null)
-                LocalAssetManifest = _serverAssetManifest;
+            if(LocalAssetManifest == null)
+                ManifestTracker.CreateLocalManifestFrom(_serverAssetManifest);    
             
             LocalAssetManifest.UpdateManifestData(_serverAssetManifest, ref _compatibleBundles);
-            Downloader.UpdateAssetManifestDiskContents();
+            ManifestTracker.UpdateAssetManifestDiskContents();
         }
 
         #endregion
@@ -191,7 +182,7 @@ namespace YondaimeCDS
 
         private async Task<byte[]> DownloadFromServer(string manifestName)
         {
-            return await new DownloadHandler().DownloadContent(manifestName);
+            return await new BundleDownloadHandle().DownloadContent(manifestName);
             //Dont save, every first change detection will replace old with new and next run will mark incompitables compitable.
             //Write only if compatibility check passes.
         }

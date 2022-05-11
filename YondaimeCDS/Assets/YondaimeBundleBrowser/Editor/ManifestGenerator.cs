@@ -23,7 +23,7 @@ namespace YondaimeCDS
 
             ScriptManifest scriptManifest = GetScriptManifest();
             string serializedScriptManifest = IOUtils.Serialize(scriptManifest);
-            DownloaderConfig config = AssetDatabase.LoadAssetAtPath<DownloaderConfig>("Assets/YondaimeCDS/Data/DownloaderConfig.asset"); 
+            BundleSystemConfig config = AssetDatabase.LoadAssetAtPath<BundleSystemConfig>("Assets/YondaimeCDS/Data/DownloaderConfig.asset"); 
             config.serializedScriptManifest = serializedScriptManifest;
             EditorUtility.SetDirty(config);
             AssetDatabase.SaveAssets();

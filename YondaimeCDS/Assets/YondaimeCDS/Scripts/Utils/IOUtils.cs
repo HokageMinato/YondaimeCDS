@@ -42,7 +42,15 @@ namespace YondaimeCDS {
             return Deserialize<T>(BytesToString(loadBuffer));
         }
 
-       
+        public static double GetOnDiskDataSize(string assetName) 
+        {
+            string path = Path.Combine(Config.STORAGE_PATH, assetName);
+            if (!File.Exists(path))
+                return 0;
+
+            FileInfo file = new FileInfo(path);
+            return file.Length;
+        }
 
         public static byte[] ToMD5(byte[] data)
         {

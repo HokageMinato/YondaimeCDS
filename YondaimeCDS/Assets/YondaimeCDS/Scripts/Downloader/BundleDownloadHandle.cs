@@ -8,20 +8,13 @@ using UnityEngine.Networking;
 namespace YondaimeCDS 
 {
 
-    public class DownloadHandler 
+    public class BundleDownloadHandle 
     {
         private Action<float> _onProgressChanged;
-        private string _bundleName;
-        
-        private static SerializedAssetManifest LocalAssetManifest
-        {
-            get { return Downloader.LocalAssetManifest; }
-        }
-
-        public async Task DownloadBundle(string bundleName,Action<float> onProgressChanged=null)
+       
+        public async Task<bool> DownloadBundle(string bundleName,Action<float> onProgressChanged=null)
         {
             _onProgressChanged = onProgressChanged;
-            _bundleName = bundleName;
 
             byte[] bundleContent = await DownloadContent(bundleName);
             bool downloadSuccess = bundleContent != null;
@@ -29,10 +22,10 @@ namespace YondaimeCDS
             if (downloadSuccess)
             {
                 SaveAssetBundleToDisk(bundleName, bundleContent);
-                UpdateLocalManifest();
             }
 
             _onProgressChanged = null;
+            return downloadSuccess;
         }
 
         public async Task<byte[]> DownloadContent(string bundleName)
@@ -67,16 +60,6 @@ namespace YondaimeCDS
         {
             IOUtils.SaveRawContentToLocalDisk(assetBytes, fileName);
         }
-
-        private void UpdateLocalManifest()
-        {
-            LocalAssetManifest.PendingUpdates.Remove(_bundleName);
-            Downloader.UpdateAssetManifestDiskContents();
-        }
-
-
-
-
 
 
     }

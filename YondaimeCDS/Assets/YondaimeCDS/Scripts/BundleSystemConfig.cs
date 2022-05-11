@@ -5,7 +5,7 @@ namespace YondaimeCDS
 {
 
     [CreateAssetMenu(fileName = "DownloaderConfig",menuName = "YondaimeCDS/DownloaderConfig")]
-    public class DownloaderConfig : ScriptableObject
+    public class BundleSystemConfig : ScriptableObject
     {
         public string remoteURL;
         public string localStorageFolderName = string.Empty;

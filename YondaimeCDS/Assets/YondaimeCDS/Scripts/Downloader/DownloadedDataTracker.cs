@@ -1,37 +1,22 @@
-using UnityEngine;
 using System;
 using System.IO;
-using UnityEngine.Networking;
-using System.Collections;
 using System.Threading.Tasks;
+using UnityEngine.Networking;
 
-namespace YondaimeCDS 
-{ 
-
-    public class DownloadTracker
+namespace YondaimeCDS
+{
+    public class DownloadedDataTracker
     {
+        private const string ResponseHeader = "Content-Length";
 
-        
-        public async Task<double> GetRemainingDownloadSize(string assetName) 
-        { 
-            double downloadedDataSize =  GetOnDiskDataSize(assetName);
+        public async Task<double> GetRemainingDownloadSize(string assetName)
+        {
+            double downloadedDataSize = IOUtils.GetOnDiskDataSize(assetName);
             double assetSize = await RequestBundleSize(Path.Combine(Config.REMOTE_URL, assetName));
-            if (assetSize == -1)
-                return assetSize;
+            if (assetSize < 0)
+                return -1;
 
             return downloadedDataSize - assetSize;
-        }
-
-
-
-        private double GetOnDiskDataSize(string assetName) 
-        {
-            string path = Path.Combine(Config.STORAGE_PATH, assetName);
-            if (!File.Exists(path))
-                return 0;
-
-            FileInfo file = new FileInfo(path);
-            return file.Length;
         }
 
 
@@ -48,7 +33,7 @@ namespace YondaimeCDS
 
                 if (downloadRequest.result == UnityWebRequest.Result.Success)
                 {
-                    return (Convert.ToDouble(downloadRequest.GetResponseHeader("Content-Length")));
+                    return (Convert.ToDouble(downloadRequest.GetResponseHeader(ResponseHeader)));
                 }
                 else
                 {
@@ -56,11 +41,5 @@ namespace YondaimeCDS
                 }
             }
         }
-
-
     }
-
-
-   
-
 }
