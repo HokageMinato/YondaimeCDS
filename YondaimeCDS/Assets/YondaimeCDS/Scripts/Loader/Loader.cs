@@ -16,17 +16,33 @@ namespace YondaimeCDS {
         {
             if (IsBundleLoaded(bundleName))
             {
-                string key = bundleName + assetName;
-                return (T)_LOADED_ASSETS[key];
+                string key = GenerateAssetKey(bundleName,assetName);
+                if(IsAssetLoaded(key))
+                   return (T)_LOADED_ASSETS[key];
+                   
+                AssetBundle loadedBundle = _LOADED_BUNDLES[bundleName];
+                return LoadAssetFromBundle<T>(loadedBundle, bundleName, assetName);
             }
             
-            AssetBundle bundle = await new BundleResourceRequest().LoadAssetBundle(bundleName);
-            _LOADED_BUNDLES.Add(bundleName,bundle);
-
-            T loadedAsset = bundle.LoadAsset<T>(assetName);
-            _LOADED_ASSETS.Add(assetName,loadedAsset);
+            AssetBundle bundle = await LoadBundle<T>(bundleName);
+            T loadedAsset = LoadAssetFromBundle<T>(bundle,assetName,bundleName);
 
             return loadedAsset;
+        }
+
+        private static T LoadAssetFromBundle<T>(AssetBundle bundle,string bundleName,string assetName) where T : UnityEngine.Object
+        {
+            T loadedAsset = bundle.LoadAsset<T>(assetName);
+            string key = GenerateAssetKey(bundleName, assetName);
+            _LOADED_ASSETS.Add(key, loadedAsset);
+            return loadedAsset;
+        }
+
+        private static async Task<AssetBundle> LoadBundle<T>(string bundleName) where T : UnityEngine.Object
+        {
+            AssetBundle bundle = await new BundleResourceRequest().LoadAssetBundle(bundleName);
+            _LOADED_BUNDLES.Add(bundleName, bundle);
+            return bundle;
         }
 
         public static async Task UnloadBundle(string bundleName)
@@ -48,8 +64,11 @@ namespace YondaimeCDS {
             return _LOADED_BUNDLES.ContainsKey(bundleName);
         }
 
-        
-        
+        private static bool IsAssetLoaded(string assetName)
+        {
+            return _LOADED_ASSETS.ContainsKey(assetName);
+        }
+
         private static void RemoveAllAssetReferencesOfBundle(string bundleName,AssetBundle bundle)
         {
             string[] assetNames = bundle.GetAllAssetNames();
@@ -59,6 +78,11 @@ namespace YondaimeCDS {
                 if(!_LOADED_ASSETS.ContainsKey(key))
                     _LOADED_ASSETS.Remove(key);
             }
+        }
+
+        private static string GenerateAssetKey(string bundleName, string assetName)
+        {
+            return bundleName + assetName;
         }
 
     }
