@@ -218,7 +218,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 79087e83a917df64790f58c2caf090fe, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  builder: {fileID: 484860837}
+  so: {fileID: 0}
 --- !u!4 &381439070
 Transform:
   m_ObjectHideFlags: 0
@@ -262,6 +262,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 38f5b60aae5cec24592863ccf0a7a020, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  someChanges: 0
 --- !u!4 &484860838
 Transform:
   m_ObjectHideFlags: 0
@@ -568,7 +569,7 @@ MonoBehaviour:
     _goInsId: 0
     stringId: None
   poolState: 0
-  downloaderConfig: {fileID: 11400000, guid: 9f33e13ec1426024b85b9e4adbb0ddc8, type: 2}
+  bundleSystemConfig: {fileID: 11400000, guid: 9f33e13ec1426024b85b9e4adbb0ddc8, type: 2}
   progressbar: {fileID: 699999055}
 --- !u!4 &1406194420
 Transform:
