@@ -75,7 +75,7 @@ public class DownloadLoadTest : CustomBehaviour
        }
        
        Task<GameObject> loadTask2 = BundleSystem.LoadAsset<GameObject>("content", "Content");
-
+       
        while (!loadTask2.IsCompleted)
        {
            yield return null;

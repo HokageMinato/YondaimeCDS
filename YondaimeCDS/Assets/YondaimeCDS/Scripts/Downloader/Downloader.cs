@@ -13,7 +13,7 @@ namespace YondaimeCDS
 
         #endregion
 
-        #region PUBLIC_PROPERTIES
+        #region PRIVATE_PROPERTIES
 
         private static SerializedAssetManifest LocalAssetManifest
         {

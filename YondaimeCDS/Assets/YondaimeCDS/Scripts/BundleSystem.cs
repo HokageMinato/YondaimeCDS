@@ -34,11 +34,17 @@ namespace YondaimeCDS
 
         public static Task<T> LoadAsset<T>(string bundleName, string assetName) where T : Object
         {
+            if (!SystemInitializedCheck())
+                return null;
+
             return Loader.LoadAsset<T>(bundleName,assetName);
         }
 
         public static Task UnloadBundle(string bundleName)
         {
+            if (!SystemInitializedCheck())
+                return null;
+
             return Loader.UnloadBundle(bundleName);
         }
 
