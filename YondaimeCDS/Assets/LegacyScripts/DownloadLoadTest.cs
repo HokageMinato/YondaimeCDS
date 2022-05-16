@@ -85,11 +85,8 @@ public class DownloadLoadTest : CustomBehaviour
        yield return new WaitForSeconds(10);
        Debug.Log("Unloading");
 
-       Task unloadTask = BundleSystem.UnloadBundle("content");
+       BundleSystem.UnloadBundle("content");
 
-       while (!unloadTask.IsCompleted)
-           yield return null;
-       
        Debug.Log("Unloaded");
 
     }

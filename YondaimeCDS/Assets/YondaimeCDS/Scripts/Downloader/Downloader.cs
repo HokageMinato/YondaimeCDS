@@ -30,19 +30,19 @@ namespace YondaimeCDS
 
         public static async Task DownloadBundle(string assetName, Action<float> onProgressChanged = null)
         {
-            if (!_activeDownloads.Contains(assetName))
+            if (IsDownloadAlreadyInProgress(assetName))
             {
                 Debug.Log($"Download Task for {assetName} already in progress, ending thread");
                 return;
             }
-            _activeDownloads.Add(assetName);
-
-            if (IsValidDownloadRequest(assetName))
+           
+            if (!IsValidDownloadRequest(assetName))
             {
                 Debug.Log("Bundle already Downloaded");
                 return;
             }
 
+            _activeDownloads.Add(assetName);
             bool downloadSuccess = await new BundleDownloadHandle().DownloadBundle(assetName, onProgressChanged);
             MarkBundleDownloaded(assetName, downloadSuccess);
         }
@@ -67,7 +67,12 @@ namespace YondaimeCDS
 
         private static bool IsValidDownloadRequest(string bundleName)
         {
-            return !LocalAssetManifest.PendingUpdates.Contains(bundleName);
+            return LocalAssetManifest.PendingUpdates.Contains(bundleName);
+        }
+
+        private static bool IsDownloadAlreadyInProgress(string bundleName) 
+        {
+            return _activeDownloads.Contains(bundleName);
         }
     }
 }

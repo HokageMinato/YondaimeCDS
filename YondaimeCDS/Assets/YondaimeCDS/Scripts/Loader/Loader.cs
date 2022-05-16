@@ -64,7 +64,7 @@ namespace YondaimeCDS
             return bundle;
         }
 
-        public static async Task UnloadBundle(string bundleName)
+        public static void UnloadBundle(string bundleName)
         {
             if (IsDownloadPending(bundleName))
                 return;
@@ -75,10 +75,7 @@ namespace YondaimeCDS
             AssetBundle bundle = _LOADED_BUNDLES[bundleName];
             RemoveAllAssetReferencesOfBundle(bundleName, bundle);
             _LOADED_BUNDLES.Remove(bundleName);
-            AsyncOperation unloadOperation = bundle.UnloadAsync(true);
-
-            while (unloadOperation.isDone)
-                await Task.Yield();
+            bundle.Unload(true);
         }
 
         private static bool IsBundleLoaded(string bundleName)
@@ -109,8 +106,10 @@ namespace YondaimeCDS
 
         private static bool IsDownloadPending(string bundleName)
         {
-            Debug.Log($"Download of {bundleName} pending");
-            return LocalAssetManifest.PendingUpdates.Contains(bundleName);
+            bool isDownloadPending = LocalAssetManifest.PendingUpdates.Contains(bundleName);
+            if(isDownloadPending)
+                Debug.Log($"Download of {bundleName} pending");
+            return isDownloadPending;
         }
 
     }

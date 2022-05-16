@@ -26,12 +26,12 @@ namespace YondaimeCDS {
             SaveBytesToDisk(fileName, StringToBytes(Serialize(content)));
         }
 
-        public static void SaveRawContentToLocalDisk(byte[] content, string contentName)
-        {
-            string fileName = Path.Combine(Config.STORAGE_PATH, contentName);
-            CreateMissingDirectory(fileName);
-            SaveBytesToDisk(fileName, content);
-        }
+        //public static void SaveRawContentToLocalDisk(byte[] content, string contentName)
+        //{
+        //    string fileName = Path.Combine(Config.STORAGE_PATH, contentName);
+        //    CreateMissingDirectory(fileName);
+        //    SaveBytesToDisk(fileName, content);
+        //}
 
         public static T LoadFromLocalDisk<T>(string contentName)
         {

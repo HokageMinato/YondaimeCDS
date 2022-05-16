@@ -8,34 +8,29 @@ using System.Collections.Generic;
 namespace YondaimeCDS
 {
 
-    public class ManifestGenerator 
+    public class ManifestGenerator
     {
-       
-        public static void GenerateManifests(CompatibilityAssetBundleManifest buildManifest,string outputDirectory)
+
+        public static void GenerateManifests(CompatibilityAssetBundleManifest buildManifest, string outputDirectory)
         {
             string serializedBundleManifest = IOUtils.Serialize(buildManifest);
             string manifestHash = ComputeHash(IOUtils.StringToBytes(serializedBundleManifest));
-            
+
             SerializedAssetManifest manifest = JsonUtility.FromJson<SerializedAssetManifest>(serializedBundleManifest);
-            //manifest.bit = manifestHash;
             serializedBundleManifest = IOUtils.Serialize(manifest);
 
 
             ScriptManifest scriptManifest = GetScriptManifest();
             string serializedScriptManifest = IOUtils.Serialize(scriptManifest);
-            BundleSystemConfig config = AssetDatabase.LoadAssetAtPath<BundleSystemConfig>("Assets/YondaimeCDS/Data/DownloaderConfig.asset"); 
+            BundleSystemConfig config = AssetDatabase.LoadAssetAtPath<BundleSystemConfig>("Assets/YondaimeCDS/Data/BundleSystemConfig.asset");
             config.serializedScriptManifest = serializedScriptManifest;
             EditorUtility.SetDirty(config);
             AssetDatabase.SaveAssets();
-            // string scriptManifestHash = ComputeHash(IOUtils.StringToBytes(serializedScriptManifest));
-            // scanifest.bit = scriptManifestHash;
-            // serializedScriptManifest = IOUtils.Serialize(scanifest);
 
 
-            
+
             HashManifest hashManifest = new HashManifest();
-            //hashManifest.ScriptHash = scanifest.bit;
-            hashManifest.AssetHash = manifestHash;//manifest.bit;
+            hashManifest.AssetHash = manifestHash;
             string serializedHashManifest = IOUtils.Serialize(hashManifest);
 
 
@@ -47,11 +42,11 @@ namespace YondaimeCDS
             File.WriteAllBytes(Path.Combine(outputDirectory, Config.ASSET_MANIFEST), manifestData);
             File.WriteAllBytes(Path.Combine(outputDirectory, Config.MANIFEST_HASH), hashManifestData);
             File.WriteAllBytes(Path.Combine(outputDirectory, Config.SCRIPT_MANIFEST), scriptManifestData);
-            File.Delete(Path.Combine(outputDirectory, "Android.manifest"));
+            //File.Delete(Path.Combine(outputDirectory, "Android.manifest"));
             File.Delete(Path.Combine(outputDirectory, "buildlogtep.json"));
         }
 
-        
+
 
         static ScriptManifest GetScriptManifest()
         {
@@ -98,7 +93,7 @@ namespace YondaimeCDS
         static List<string> GenerateScriptHashesOfScriptDepencendies(List<string> scriptDependencies)
         {
             List<string> scriptHashes = new List<string>();
-            
+
             foreach (string scriptDependency in scriptDependencies)
             {
                 scriptHashes.Add(ComputeHash(IOUtils.StringToBytes(GetContentOfScript(scriptDependency))));
@@ -124,6 +119,6 @@ namespace YondaimeCDS
 
     }
 
-    
+
 
 }

@@ -14,6 +14,4 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   remoteURL: https://github.com/HokageMinato/YondaimeCDSContents/raw/main/
   localStorageFolderName: 
-  serializedScriptManifest: '{"bundleWiseScriptHashes":[{"BundleName":"content","BundleSciptHashes":["0CDBD14AF1FFA7F2FFA8437E0532642F"]},{"BundleName":"content
-    (1)","BundleSciptHashes":["11CE061125E127838B654C44D5A08127"]},{"BundleName":"content
-    3","BundleSciptHashes":["11CE061125E127838B654C44D5A08127","3A16A7AF103E2900E18482D8B9E38398"]}],"allScriptHashes":["0CDBD14AF1FFA7F2FFA8437E0532642F","11CE061125E127838B654C44D5A08127","3A16A7AF103E2900E18482D8B9E38398"]}'
+  serializedScriptManifest: '{"bundleWiseScriptHashes":[{"BundleName":"content (1)","BundleScriptHash":"11CE061125E127838B654C44D5A08127"},{"BundleName":"so","BundleScriptHash":"569C3988AC198413BEA2782D3B9CD44F"}],"allScriptHashes":["11CE061125E127838B654C44D5A08127","569C3988AC198413BEA2782D3B9CD44F"]}'

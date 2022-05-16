@@ -40,12 +40,12 @@ namespace YondaimeCDS
             return Loader.LoadAsset<T>(bundleName,assetName);
         }
 
-        public static Task UnloadBundle(string bundleName)
+        public static void UnloadBundle(string bundleName)
         {
             if (!SystemInitializedCheck())
-                return null;
+                return;
 
-            return Loader.UnloadBundle(bundleName);
+            Loader.UnloadBundle(bundleName);
         }
 
         #endregion
@@ -78,7 +78,6 @@ namespace YondaimeCDS
 
         #endregion
 
-
         #region SYSTEM_CHECKS
 
         private static bool SystemInitializedCheck()
@@ -89,6 +88,10 @@ namespace YondaimeCDS
             return _IS_INITIALZIED;
         }
 
+        public static void Log(object data) 
+        {
+            Debug.Log($"bsys {data}");
+        }
         #endregion
     }
 }

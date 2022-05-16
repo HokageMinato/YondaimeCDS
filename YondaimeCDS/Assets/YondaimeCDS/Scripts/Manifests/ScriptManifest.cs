@@ -97,23 +97,6 @@ namespace YondaimeCDS {
             BundleName = bundleName;
             BundleSciptHashes = bundleScriptHash;
         }
-
-        public bool Equals(BundleScriptHashTuple tuple) 
-        {
-            bool allScriptsPresent = tuple.BundleSciptHashes.Count == BundleSciptHashes.Count;
-            if(!allScriptsPresent)
-                return false;
-
-            List<string> otherScriptHashes = tuple.BundleSciptHashes;
-
-            for (int i = 0; i < otherScriptHashes.Count; i++)
-            {
-                if (BundleSciptHashes[i] != otherScriptHashes[i])
-                    return false;
-            }
-
-            return true;
-        }
     }
 
 }
