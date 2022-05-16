@@ -26,16 +26,18 @@ namespace YondaimeCDS {
             SaveBytesToDisk(fileName, StringToBytes(Serialize(content)));
         }
 
-        //public static void SaveRawContentToLocalDisk(byte[] content, string contentName)
-        //{
-        //    string fileName = Path.Combine(Config.STORAGE_PATH, contentName);
-        //    CreateMissingDirectory(fileName);
-        //    SaveBytesToDisk(fileName, content);
-        //}
-
         public static T LoadFromLocalDisk<T>(string contentName)
         {
             byte[] loadBuffer = LoadBytesFromDisk(Path.Combine(Config.STORAGE_PATH, contentName));
+            if (loadBuffer == null)
+                return default;
+            
+            return Deserialize<T>(BytesToString(loadBuffer));
+        }
+
+        public static T LoadFromStreamingAssets<T>(string contentName)
+        {
+            byte[] loadBuffer = LoadBytesFromDisk(Path.Combine(Config.STREAM_PATH, contentName));
             if (loadBuffer == null)
                 return default;
             

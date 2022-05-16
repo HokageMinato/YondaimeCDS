@@ -46,6 +46,7 @@ namespace YondaimeCDS
 
         public async Task<List<string>> GetUpdates()
         {
+            
             await DownloadManifestHash();
 
             if (!AssetManifestUpdateDetected())

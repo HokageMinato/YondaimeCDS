@@ -2,7 +2,6 @@ using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine;
 
-[assembly: System.Runtime.CompilerServices.InternalsVisibleToAttribute("Unity.AssetBundleBrowser.Editor.Tests")]
 
 namespace AssetBundleBrowser
 {
@@ -28,6 +27,7 @@ namespace AssetBundleBrowser
             Browser,
             Builder,
             Inspect,
+            Uri
         }
         [SerializeField]
         Mode m_Mode;
@@ -43,7 +43,9 @@ namespace AssetBundleBrowser
 
         [SerializeField]
         internal AssetBundleInspectTab m_InspectTab;
-        
+
+        [SerializeField]
+        internal AssetBundleURITab m_URITab;
 
         private Texture2D m_RefreshTexture;
 
@@ -76,15 +78,22 @@ namespace AssetBundleBrowser
         {
 
             Rect subPos = GetSubWindowArea();
+            
             if(m_ManageTab == null)
                 m_ManageTab = new AssetBundleManageTab();
             m_ManageTab.OnEnable(subPos, this);
+            
             if(m_BuildTab == null)
                 m_BuildTab = new AssetBundleBuildTab();
             m_BuildTab.OnEnable(this);
+            
             if (m_InspectTab == null)
                 m_InspectTab = new AssetBundleInspectTab();
             m_InspectTab.OnEnable(subPos);
+            
+            if(m_URITab == null)
+                m_URITab = new AssetBundleURITab();
+            m_URITab.OnEnable();
 
             m_RefreshTexture = EditorGUIUtility.FindTexture("Refresh");
 
@@ -114,6 +123,8 @@ namespace AssetBundleBrowser
                 m_BuildTab.OnDisable();
             if (m_InspectTab != null)
                 m_InspectTab.OnDisable();
+            if(m_URITab != null)
+                m_URITab.OnDisable();
         }
 
         public void OnBeforeSerialize()
@@ -162,6 +173,11 @@ namespace AssetBundleBrowser
                 case Mode.Browser:
                     m_ManageTab.OnGUI(GetSubWindowArea());
                     break;
+
+                case Mode.Uri:
+                    m_URITab.OnGUI();
+                    break;
+
                 default:
                     m_ManageTab.OnGUI(GetSubWindowArea());
                     break;
@@ -180,13 +196,19 @@ namespace AssetBundleBrowser
                     if (clicked)
                         m_ManageTab.ForceReloadData();
                     break;
+                
                 case Mode.Builder:
                     GUILayout.Space(m_RefreshTexture.width + k_ToolbarPadding);
                     break;
+               
                 case Mode.Inspect:
                     clicked = GUILayout.Button(m_RefreshTexture);
                     if (clicked)
                         m_InspectTab.RefreshBundles();
+                    break;
+
+                case Mode.Uri:
+                    //INitialiation URI
                     break;
             }
 

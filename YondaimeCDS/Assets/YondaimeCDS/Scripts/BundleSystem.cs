@@ -23,6 +23,7 @@ namespace YondaimeCDS
             _config = config;
             Config.STORAGE_PATH = _config.StoragePath;
             Config.REMOTE_URL = _config.remoteURL;
+            Config.STREAM_PATH = _config.StreamingPath;
             ManifestTracker.Initialize(_config.serializedScriptManifest);
             _IS_INITIALZIED = true;
         }
@@ -32,12 +33,17 @@ namespace YondaimeCDS
 
         #region LOAD_HANDLES
 
-        public static Task<T> LoadAsset<T>(string bundleName, string assetName) where T : Object
+        public static async Task<T> LoadAsset<T>(string bundleName, string assetName) where T : Object
         {
             if (!SystemInitializedCheck())
                 return null;
 
-            return Loader.LoadAsset<T>(bundleName,assetName);
+            T loadedAsset = await Loader.LoadAsset<T>(bundleName, assetName);
+
+            if (IsCatelogSetToAutoUpdate())
+                await CheckForContentUpdate();
+            
+            return loadedAsset;
         }
 
         public static void UnloadBundle(string bundleName)
@@ -65,6 +71,7 @@ namespace YondaimeCDS
             if (!SystemInitializedCheck())
                 return null;
 
+
             return Downloader.CheckForContentUpdate();
         }
 
@@ -86,6 +93,11 @@ namespace YondaimeCDS
                 Debug.LogError("Initialize System before performing any operations");
 
             return _IS_INITIALZIED;
+        }
+
+        private static bool IsCatelogSetToAutoUpdate() 
+        {
+            return ManifestTracker.CatelogSettings.autoUpdateCatelog;
         }
 
         public static void Log(object data) 

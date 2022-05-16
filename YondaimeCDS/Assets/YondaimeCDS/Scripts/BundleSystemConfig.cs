@@ -24,16 +24,25 @@ namespace YondaimeCDS
             }
         }
 
+        public string StreamingPath 
+        {
+            get { return Application.streamingAssetsPath; }
+        }
+
     }
 
     public static class Config
     {
         public static string STORAGE_PATH;
+        public static string STREAM_PATH;
+        public static string SETTINGS_PATH;
         public static string REMOTE_URL;
 
         public const string MANIFEST_HASH = "manifestHash";
         public const string ASSET_MANIFEST = "manifest";
         public const string SCRIPT_MANIFEST = "scriptManifest";
+        public const string CATELOG_SETTINGS = "Settings";
+        
     }
 
 }
