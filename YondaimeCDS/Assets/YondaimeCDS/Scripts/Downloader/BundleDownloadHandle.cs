@@ -18,11 +18,7 @@ namespace YondaimeCDS
 
             string absoluteSavePath = Path.Combine(Config.STORAGE_PATH, bundleName);
             bool downloadSuccess = await DownloadBundleContent(bundleName, absoluteSavePath);
-            //if (downloadSuccess)
-            //{
-            //    SaveAssetBundleToDisk(bundleName, bundleContent);
-            //}
-
+            
             _onProgressChanged = null;
             return downloadSuccess;
         }

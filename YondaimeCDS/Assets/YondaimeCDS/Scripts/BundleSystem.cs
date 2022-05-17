@@ -38,11 +38,16 @@ namespace YondaimeCDS
             if (!SystemInitializedCheck())
                 return null;
 
-            T loadedAsset = await Loader.LoadAsset<T>(bundleName, assetName);
-
             if (IsCatelogSetToAutoUpdate())
-                await CheckForContentUpdate();
-            
+            {
+                List<string> updates = await CheckForContentUpdate();
+                if (updates.Contains(bundleName)) 
+                {
+                    await DownloadBundle(bundleName);
+                }
+            }
+
+            T loadedAsset = await Loader.LoadAsset<T>(bundleName, assetName);
             return loadedAsset;
         }
 
@@ -58,7 +63,7 @@ namespace YondaimeCDS
 
         #region DOWNLOAD_HANDLES
 
-        public static Task DownloadBundle(string bundleName, Action<float> OnProgressChanged)
+        public static Task DownloadBundle(string bundleName, Action<float> OnProgressChanged=null)
         {
             if (!SystemInitializedCheck())
                 return null;

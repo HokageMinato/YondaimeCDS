@@ -7,7 +7,7 @@ namespace YondaimeCDS
     public static class Loader
     {
         private static Dictionary<string, AssetBundle> _LOADED_BUNDLES = new Dictionary<string, AssetBundle>();
-        private static Dictionary<string, Object> _LOADED_ASSETS = new Dictionary<string, Object>();
+        private static Dictionary<string, UnityEngine.Object> _LOADED_ASSETS = new Dictionary<string, UnityEngine.Object>();
 
 
         #region PRIVATE_PROPERTIES
@@ -20,11 +20,8 @@ namespace YondaimeCDS
         #endregion
 
 
-        public static async Task<T> LoadAsset<T>(string bundleName, string assetName) where T : Object
+        public static async Task<T> LoadAsset<T>(string bundleName, string assetName) where T : UnityEngine.Object
         {
-
-            if (IsDownloadPending(bundleName))
-                return null;
 
             if (IsBundleLoaded(bundleName))
             {
@@ -41,15 +38,16 @@ namespace YondaimeCDS
             }
 
 
-
             AssetBundle bundle = await LoadBundle<T>(bundleName);
-            T loadedAsset = LoadAssetFromBundle<T>(bundle, bundleName, assetName);
+            if(bundle == null)
+                return null;
 
+            T loadedAsset = LoadAssetFromBundle<T>(bundle, bundleName, assetName);
             return loadedAsset;
         }
 
         private static T LoadAssetFromBundle<T>(AssetBundle bundle, string bundleName, string assetName)
-            where T : Object
+            where T : UnityEngine.Object
         {
             T loadedAsset = bundle.LoadAsset<T>(assetName);
             string key = GenerateAssetKey(bundleName, assetName);
@@ -57,18 +55,21 @@ namespace YondaimeCDS
             return loadedAsset;
         }
 
-        private static async Task<AssetBundle> LoadBundle<T>(string bundleName) where T : Object
+        private static async Task<AssetBundle> LoadBundle<T>(string bundleName) where T : UnityEngine.Object
         {
             AssetBundle bundle = await new BundleResourceRequest().LoadAssetBundle(bundleName);
+            if (bundle == null)
+            {
+                Debug.LogError($"Invalid bundle load request {bundle}");
+                return null;
+            }
+
             _LOADED_BUNDLES.Add(bundleName, bundle);
             return bundle;
         }
 
         public static void UnloadBundle(string bundleName)
         {
-            if (IsDownloadPending(bundleName))
-                return;
-
             if (!IsBundleLoaded(bundleName))
                 return;
 
@@ -104,13 +105,7 @@ namespace YondaimeCDS
             return bundleName + assetName;
         }
 
-        private static bool IsDownloadPending(string bundleName)
-        {
-            bool isDownloadPending = LocalAssetManifest.PendingUpdates.Contains(bundleName);
-            if(isDownloadPending)
-                Debug.Log($"Download of {bundleName} pending");
-            return isDownloadPending;
-        }
+      
 
     }
 }

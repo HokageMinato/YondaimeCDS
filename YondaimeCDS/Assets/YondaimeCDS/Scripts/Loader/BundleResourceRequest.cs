@@ -9,16 +9,41 @@ namespace YondaimeCDS {
 		
 		public async Task<AssetBundle> LoadAssetBundle(string assetName) 
 		{
-			string fileName = Path.Combine(Config.STORAGE_PATH, assetName);
-			AssetBundleCreateRequest bundleCreationRequest = AssetBundle.LoadFromFileAsync(fileName);
+			AssetBundle bundle = await TryLoadFromPersistantStorage(assetName);
+			if (bundle == null)
+				bundle = await TryLoadFromStreamedStorage(assetName);
+
+			return bundle;
+		}
+
+		private async Task<AssetBundle> TryLoadFromPersistantStorage(string bundleName) 
+		{
+			string persistantStoragePath = Path.Combine(Config.STORAGE_PATH, bundleName);
+			return await LoadBundleFromPath(persistantStoragePath);
+		}
+		
+		private async Task<AssetBundle> TryLoadFromStreamedStorage(string bundleName) 
+		{
+			string streamedStoragePath = Path.Combine(Config.STREAM_PATH, bundleName);
+			return await LoadBundleFromPath(streamedStoragePath);
+		}
+
+		private async Task<AssetBundle> LoadBundleFromPath(string path) 
+		{
+			AssetBundleCreateRequest bundleCreationRequest = AssetBundle.LoadFromFileAsync(path);
+			
+			if(bundleCreationRequest == null)
+				return null;
 
 			while (!bundleCreationRequest.isDone)
 				await Task.Yield();
 
-			return bundleCreationRequest.assetBundle;			
-			
+			return bundleCreationRequest.assetBundle;
 		}
-		
+
+
+
+
 	}
 
 }
