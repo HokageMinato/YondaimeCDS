@@ -30,6 +30,16 @@ namespace YondaimeCDS
 
         #endregion
 
+        #region CONTENT_TRACKING
+        public static Task<List<string>> CheckForContentUpdate()
+        {
+            if (!SystemInitializedCheck())
+                return null;
+
+
+            return Downloader.CheckForContentUpdate();
+        }
+        #endregion
 
         #region LOAD_HANDLES
 
@@ -71,14 +81,7 @@ namespace YondaimeCDS
             return Downloader.DownloadBundle(bundleName, OnProgressChanged);
         }
 
-        public static Task<List<string>> CheckForContentUpdate()
-        {
-            if (!SystemInitializedCheck())
-                return null;
-
-
-            return Downloader.CheckForContentUpdate();
-        }
+       
 
         public static Task<double> CalculateRemainingDownloadSize(string assetName)
         {

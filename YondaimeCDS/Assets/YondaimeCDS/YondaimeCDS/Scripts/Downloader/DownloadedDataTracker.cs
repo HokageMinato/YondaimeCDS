@@ -16,6 +16,10 @@ namespace YondaimeCDS
             if (assetSize < 0)
                 return -1;
 
+            if (downloadedDataSize < 0)
+                return assetSize;
+
+
             return downloadedDataSize - assetSize;
         }
 

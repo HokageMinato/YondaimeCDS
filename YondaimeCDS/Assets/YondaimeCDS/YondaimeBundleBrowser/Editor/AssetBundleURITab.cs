@@ -51,12 +51,15 @@ namespace AssetBundleBrowser
 
             bf.Serialize(file, m_UserData);
             file.Close();
-            
 
-            string bundleSettings  = Path.Combine(Application.streamingAssetsPath,Config.CATELOG_SETTINGS);
+            string directory = dataPath+"/Assets/Resources";
+           
+            if(!Directory.Exists(directory))
+                Directory.CreateDirectory(directory);
+
             file = File.Create(bundleSettings);
             byte[] buffer = IOUtils.StringToBytes(IOUtils.Serialize(new CatelogSettings(m_UserData.autoUpdateCatelog)));
-            file.Write(buffer,0,buffer.Length);
+            file.Write(buffer, 0, buffer.Length);
             file.Close();
 
         }
