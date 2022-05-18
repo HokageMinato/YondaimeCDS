@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 using UnityEngine.UI;
 using UnityEditor;
 using System.Collections.Generic;
+using UnityEngine.Networking;
 
 public class DownloadLoadTest : CustomBehaviour
 {
@@ -19,76 +20,44 @@ public class DownloadLoadTest : CustomBehaviour
         StartCoroutine(Fetcher());
     }
 
+    
 
     private IEnumerator Fetcher() 
-    { Debug.Log("st2");
-        
-        BundleSystem.Initialize();
-
-        // Task<List<string>> downloadTask = BundleSystem.CheckForContentUpdate();
-        //
-        // while (!downloadTask.IsCompleted)
-        // {
-        //     yield return null;
-        // }
-        //
-        // List<string> downloadList = downloadTask.Result;
-        // for (int i = 0; i < downloadList.Count; i++)
-        // {
-        //     Debug.Log(downloadList[i]);
-        // }
-        // Debug.Log("Update check 1 done");
-        //
-        
-         Task download = Downloader.DownloadBundle("content 3", DownloadProgress => { progressbar.fillAmount = DownloadProgress;});
-        // Task download2 = Downloader.DownloadBundle("content 3",amount => { progressbar.fillAmount = amount; });
-        //
-        // while(!download.IsCompleted)
-        //     yield return null;
-        //
-        // while(!download2.IsCompleted)
-        //     yield return null;
-        //
-        //
-        // Debug.Log("Donwload done");
-        //
-        // Task<List<string>> downloadTask2 = Downloader.CheckForContentUpdate();
-        //
-        // while (!downloadTask2.IsCompleted)
-        // {
-        //     yield return null;
-        // }
-        //
-        // downloadList = downloadTask2.Result;
-        // for (int i = 0; i < downloadList.Count; i++)
-        // {
-        //     Debug.Log(downloadList[i]);
-        // }
-        //
-        // Debug.Log("Update check 2 done");
-
-       Task<GameObject> loadTask = BundleSystem.LoadAsset<GameObject>("content", "Content");
-
-       while (!loadTask.IsCompleted)
-       {
-           yield return null;
-       }
+    {
+        string bundleName = "payload.zip";
+        string baseurl = "https://github.com/HokageMinato/YondaimeCDSContents/raw/main/";
        
-       Task<GameObject> loadTask2 = BundleSystem.LoadAsset<GameObject>("content", "Content");
-       
-       while (!loadTask2.IsCompleted)
-       {
-           yield return null;
-       }
+        string absoluteUrl = Path.Combine(baseurl, bundleName);
+        string absoluteSavePath = Path.Combine(Application.persistentDataPath, bundleName);
 
-       MonoInstantiate(loadTask.Result);
-       yield return new WaitForSeconds(10);
-       Debug.Log("Unloading");
 
-       BundleSystem.UnloadBundle("content");
+        using (UnityWebRequest downloadRequest = UnityWebRequest.Get(absoluteUrl))
+        {
 
-       Debug.Log("Unloaded");
 
+            downloadRequest.downloadHandler = new DownloadHandlerFile(absoluteSavePath);
+            downloadRequest.SendWebRequest();
+
+            
+
+            while (!downloadRequest.isDone) 
+            { 
+                yield return null;
+                progressbar.fillAmount = downloadRequest.downloadProgress;
+            }
+
+
+            if (downloadRequest.result == UnityWebRequest.Result.Success)
+            {
+                
+                Debug.Log("success");
+            }
+            else 
+            { 
+                 Debug.Log(downloadRequest.error);
+            }
+
+        }
     }
 
     

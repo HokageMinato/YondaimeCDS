@@ -569,7 +569,6 @@ MonoBehaviour:
     _goInsId: 0
     stringId: None
   poolState: 0
-  bundleSystemConfig: {fileID: 11400000, guid: 9f33e13ec1426024b85b9e4adbb0ddc8, type: 2}
   progressbar: {fileID: 699999055}
 --- !u!4 &1406194420
 Transform:

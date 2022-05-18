@@ -33,7 +33,6 @@ namespace YondaimeCDS
             if (!SystemInitializedCheck())
                 return null;
 
-
             return Downloader.CheckForContentUpdate();
         }
         #endregion

@@ -14,10 +14,11 @@ namespace YondaimeCDS
         public async Task<bool> DownloadBundle(string bundleName, Action<float> onProgressChanged = null)
         {
             _onProgressChanged = onProgressChanged;
-
-
+            
+            string absoluteUrl = Path.Combine(BundleSystemConfig.REMOTE_URL, bundleName);
             string absoluteSavePath = Path.Combine(BundleSystemConfig.STORAGE_PATH, bundleName);
-            bool downloadSuccess = await DownloadBundleContent(bundleName, absoluteSavePath);
+
+            bool downloadSuccess = await DownloadBundleContent(absoluteUrl,absoluteSavePath);
             
             _onProgressChanged = null;
             return downloadSuccess;
@@ -49,12 +50,12 @@ namespace YondaimeCDS
             }
         }
 
-        private async Task<bool> DownloadBundleContent(string bundleName, string absoluteSavePath)
+        private async Task<bool> DownloadBundleContent(string absoluteUrl, string absoluteSavePath)
         {
-            string url = Path.Combine(BundleSystemConfig.REMOTE_URL, bundleName);
-            using (UnityWebRequest downloadRequest = UnityWebRequest.Get(url))
+          
+            using (UnityWebRequest downloadRequest = UnityWebRequest.Get(absoluteUrl))
             {
-                downloadRequest.downloadHandler = new DownloadHandlerFile(absoluteSavePath, true);
+                downloadRequest.downloadHandler = new DownloadHandlerFile(absoluteSavePath);
                 downloadRequest.SendWebRequest();
 
                 while (!downloadRequest.isDone)
@@ -72,11 +73,7 @@ namespace YondaimeCDS
                 return false;
             }
 
-            //private void SaveAssetBundleToDisk(string fileName, byte[] assetBytes)
-            //{
-            //    IOUtils.SaveRawContentToLocalDisk(assetBytes, fileName);
-            //}
-
+           
 
         }
     }

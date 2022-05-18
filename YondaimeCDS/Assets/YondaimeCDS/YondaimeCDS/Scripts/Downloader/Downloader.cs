@@ -22,7 +22,7 @@ namespace YondaimeCDS
 
         public static async Task<List<string>> CheckForContentUpdate()
         {
-            return await new ContentUpdateDetector().GetUpdates();
+            return new List<string>(await new ContentUpdateDetector().GetUpdates());
         }
 
         public static async Task DownloadBundle(string assetName, Action<float> onProgressChanged = null)
