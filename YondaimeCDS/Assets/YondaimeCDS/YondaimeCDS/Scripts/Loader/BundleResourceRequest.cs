@@ -18,13 +18,13 @@ namespace YondaimeCDS {
 
 		private async Task<AssetBundle> TryLoadFromPersistantStorage(string bundleName) 
 		{
-			string persistantStoragePath = Path.Combine(Config.STORAGE_PATH, bundleName);
+			string persistantStoragePath = Path.Combine(BundleSystemConfig.STORAGE_PATH, bundleName);
 			return await LoadBundleFromPath(persistantStoragePath);
 		}
 		
 		private async Task<AssetBundle> TryLoadFromStreamedStorage(string bundleName) 
 		{
-			string streamedStoragePath = Path.Combine(Config.STREAM_PATH, bundleName);
+			string streamedStoragePath = Path.Combine(BundleSystemConfig.STREAM_PATH, bundleName);
 			return await LoadBundleFromPath(streamedStoragePath);
 		}
 

@@ -18,12 +18,9 @@ namespace YondaimeCDS
 
         #region INITIALZER
 
-        public static void Initialize(BundleSystemConfig config)
+        public static void Initialize()
         {
-            _config = config;
-            Config.STORAGE_PATH = _config.StoragePath;
-            Config.REMOTE_URL = _config.remoteURL;
-            Config.STREAM_PATH = _config.StreamingPath;
+            _config = IOUtils.LoadFromResourcesTextAsset<BundleSystemConfig>(Constants.SYSTEM_SETTINGS);
             ManifestTracker.Initialize(_config.serializedScriptManifest);
             _IS_INITIALZIED = true;
         }
@@ -51,7 +48,7 @@ namespace YondaimeCDS
             if (IsCatelogSetToAutoUpdate())
             {
                 List<string> updates = await CheckForContentUpdate();
-                if (updates.Contains(bundleName)) 
+                if (updates!=null && updates.Contains(bundleName)) 
                 {
                     await DownloadBundle(bundleName);
                 }
@@ -105,7 +102,7 @@ namespace YondaimeCDS
 
         private static bool IsCatelogSetToAutoUpdate() 
         {
-            return ManifestTracker.CatelogSettings.autoUpdateCatelog;
+            return _config.autoUpdateCatelog;
         }
 
         public static void Log(object data) 

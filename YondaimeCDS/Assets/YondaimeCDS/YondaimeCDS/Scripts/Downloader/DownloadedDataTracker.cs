@@ -12,7 +12,7 @@ namespace YondaimeCDS
         public async Task<double> GetRemainingDownloadSize(string assetName)
         {
             double downloadedDataSize = IOUtils.GetOnDiskDataSize(assetName);
-            double assetSize = await RequestBundleSize(Path.Combine(Config.REMOTE_URL, assetName));
+            double assetSize = await RequestBundleSize(Path.Combine(BundleSystemConfig.REMOTE_URL, assetName));
             if (assetSize < 0)
                 return -1;
 

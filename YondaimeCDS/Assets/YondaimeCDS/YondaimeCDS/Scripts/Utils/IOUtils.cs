@@ -21,32 +21,28 @@ namespace YondaimeCDS {
 
         public static void SaveObjectToLocalDisk<T>(T content, string contentName)
         {
-            string fileName = Path.Combine(Config.STORAGE_PATH, contentName);
+            string fileName = Path.Combine(BundleSystemConfig.STORAGE_PATH, contentName);
             CreateMissingDirectory(fileName);
             SaveBytesToDisk(fileName, StringToBytes(Serialize(content)));
         }
 
         public static T LoadFromLocalDisk<T>(string contentName)
         {
-            byte[] loadBuffer = LoadBytesFromDisk(Path.Combine(Config.STORAGE_PATH, contentName));
+            byte[] loadBuffer = LoadBytesFromDisk(Path.Combine(BundleSystemConfig.STORAGE_PATH, contentName));
             if (loadBuffer == null)
                 return default;
             
             return Deserialize<T>(BytesToString(loadBuffer));
         }
 
-        public static T LoadFromStreamingAssets<T>(string contentName)
+        public static T LoadFromResourcesTextAsset<T>(string contentName)
         {
-            byte[] loadBuffer = LoadBytesFromDisk(Path.Combine(Config.STREAM_PATH, contentName));
-            if (loadBuffer == null)
-                return default;
-            
-            return Deserialize<T>(BytesToString(loadBuffer));
+            return Deserialize<T>(Resources.Load<TextAsset>(contentName).text);
         }
 
         public static double GetOnDiskDataSize(string assetName) 
         {
-            string path = Path.Combine(Config.STORAGE_PATH, assetName);
+            string path = Path.Combine(BundleSystemConfig.STORAGE_PATH, assetName);
             if (!File.Exists(path))
                 return 0;
 
@@ -67,7 +63,7 @@ namespace YondaimeCDS {
             return Encoding.UTF8.GetString(content);
         }
 
-        #region PRIVATES
+#region PRIVATES
 
 
         public static byte[] StringToBytes(string data)
@@ -110,7 +106,7 @@ namespace YondaimeCDS {
 
        
 
-        #endregion
+#endregion
 
     }
 }

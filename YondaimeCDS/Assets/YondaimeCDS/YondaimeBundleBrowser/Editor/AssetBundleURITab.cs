@@ -52,16 +52,12 @@ namespace AssetBundleBrowser
             bf.Serialize(file, m_UserData);
             file.Close();
 
-            string directory = dataPath+"/Assets/Resources";
-           
-            if(!Directory.Exists(directory))
-                Directory.CreateDirectory(directory);
 
-            file = File.Create(bundleSettings);
-            byte[] buffer = IOUtils.StringToBytes(IOUtils.Serialize(new CatelogSettings(m_UserData.autoUpdateCatelog)));
-            file.Write(buffer, 0, buffer.Length);
-            file.Close();
-
+            BundleSystemConfig config = IOUtils.LoadFromResourcesTextAsset<BundleSystemConfig>(Constants.SYSTEM_SETTINGS);
+            config.remoteURL = m_UserData.remoteURL;
+            config.autoUpdateCatelog = m_UserData.autoUpdateCatelog;
+            ManifestGenerator.WriteConfigToResources(config);
+            
         }
 
 

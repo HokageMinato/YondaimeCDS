@@ -8,13 +8,10 @@ namespace YondaimeCDS
     public static class Downloader
     {
         #region PRIVATE_VARS
-
         private static HashSet<string> _activeDownloads = new HashSet<string>();
-
         #endregion
 
         #region PRIVATE_PROPERTIES
-
         private static SerializedAssetManifest LocalAssetManifest
         {
             get { return ManifestTracker.LocalAssetManifest; }

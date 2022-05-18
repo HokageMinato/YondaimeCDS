@@ -11,6 +11,11 @@ namespace YondaimeCDS
     public class ManifestGenerator
     {
 
+        public static string SERIZ_ASSET_MANIFEST;
+        public static string SERIZ_SCRIPT_MANIFEST;
+        public static string SERIZ_HASH_MANIFEST;
+
+
         public static void GenerateManifests(CompatibilityAssetBundleManifest buildManifest, string outputDirectory)
         {
             string serializedBundleManifest = IOUtils.Serialize(buildManifest);
@@ -18,34 +23,45 @@ namespace YondaimeCDS
 
             SerializedAssetManifest manifest = JsonUtility.FromJson<SerializedAssetManifest>(serializedBundleManifest);
             serializedBundleManifest = IOUtils.Serialize(manifest);
+            SERIZ_ASSET_MANIFEST = serializedBundleManifest;
 
 
             ScriptManifest scriptManifest = GetScriptManifest();
             string serializedScriptManifest = IOUtils.Serialize(scriptManifest);
-            BundleSystemConfig config = AssetDatabase.LoadAssetAtPath<BundleSystemConfig>("Assets/YondaimeCDS/YondaimeCDS/Data/BundleSystemConfig.asset");
-            config.serializedScriptManifest = serializedScriptManifest;
-            EditorUtility.SetDirty(config);
-            AssetDatabase.SaveAssets();
-
-
+            SERIZ_SCRIPT_MANIFEST = serializedScriptManifest;
+            
 
             HashManifest hashManifest = new HashManifest();
             hashManifest.AssetHash = manifestHash;
             string serializedHashManifest = IOUtils.Serialize(hashManifest);
-
+            SERIZ_HASH_MANIFEST = serializedHashManifest;
 
             byte[] manifestData = IOUtils.StringToBytes(serializedBundleManifest);
             byte[] scriptManifestData = IOUtils.StringToBytes(serializedScriptManifest);
             byte[] hashManifestData = IOUtils.StringToBytes(serializedHashManifest);
 
 
-            File.WriteAllBytes(Path.Combine(outputDirectory, Config.ASSET_MANIFEST), manifestData);
-            File.WriteAllBytes(Path.Combine(outputDirectory, Config.MANIFEST_HASH), hashManifestData);
-            File.WriteAllBytes(Path.Combine(outputDirectory, Config.SCRIPT_MANIFEST), scriptManifestData);
-            //File.Delete(Path.Combine(outputDirectory, "Android.manifest"));
+            File.WriteAllBytes(Path.Combine(outputDirectory, Constants.ASSET_MANIFEST), manifestData);
+            File.WriteAllBytes(Path.Combine(outputDirectory, Constants.MANIFEST_HASH), hashManifestData);
+            File.WriteAllBytes(Path.Combine(outputDirectory, Constants.SCRIPT_MANIFEST), scriptManifestData);
+
+            WriteConfigToResources(new BundleSystemConfig() { serializedScriptManifest = serializedScriptManifest });
+
+            File.Delete(Path.Combine(outputDirectory, $"{Path.GetDirectoryName(outputDirectory)}.manifest"));
             File.Delete(Path.Combine(outputDirectory, "buildlogtep.json"));
+
         }
 
+
+        public static void WriteConfigToResources(BundleSystemConfig config)
+        {
+            string directory = Path.GetFullPath(".") + "/Assets/Resources";
+            if (!Directory.Exists(directory))
+                Directory.CreateDirectory(directory);
+
+            string path = Path.Combine(directory, $"{Constants.SYSTEM_SETTINGS}.txt");
+            File.WriteAllText(path,IOUtils.Serialize(config));
+        }
 
 
         static ScriptManifest GetScriptManifest()

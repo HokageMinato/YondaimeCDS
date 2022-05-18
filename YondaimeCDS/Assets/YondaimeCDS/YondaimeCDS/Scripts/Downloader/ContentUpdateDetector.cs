@@ -8,17 +8,17 @@ namespace YondaimeCDS
     {
         private static string MANIFEST_HASH
         {
-            get { return Config.MANIFEST_HASH; }
+            get { return Constants.MANIFEST_HASH; }
         }
 
         private static string ASSET_MANIFEST
         {
-            get { return Config.ASSET_MANIFEST; }
+            get { return Constants.ASSET_MANIFEST; }
         }
 
         private static string SCRIPT_MANIFEST
         {
-            get { return Config.SCRIPT_MANIFEST; }
+            get { return Constants.SCRIPT_MANIFEST; }
         }
 
 
@@ -46,8 +46,10 @@ namespace YondaimeCDS
 
         public async Task<List<string>> GetUpdates()
         {
-            
             await DownloadManifestHash();
+
+            if(!ServerAssetManifestPresent())
+                return null; 
 
             if (!AssetManifestUpdateDetected())
             {
@@ -77,6 +79,7 @@ namespace YondaimeCDS
             if (manifestHashBuffer == null)
             {
                 Debug.Log("Empty manifestHash recieved");
+                return;
             }
             
             _serverHashManifest = IOUtils.Deserialize<HashManifest>(IOUtils.BytesToString(manifestHashBuffer));
@@ -85,14 +88,14 @@ namespace YondaimeCDS
         
         #region UPDATE_CHECK
 
-        //private bool ScriptUpdateDetected()
-        //{
-        //    return _serverHashManifest.ScriptHash != LocalHashManifest.ScriptHash;
-        //}
-
         private bool LocalAssetManifestPresent()
         {
             return LocalAssetManifest != null;
+        }
+        
+        private bool ServerAssetManifestPresent()
+        {
+            return _serverAssetManifest != null;
         }
 
         private bool AssetManifestUpdateDetected()
@@ -107,6 +110,8 @@ namespace YondaimeCDS
         {
             return _compatibleBundles.Count > 0;
         }
+
+        
 
         #endregion
 

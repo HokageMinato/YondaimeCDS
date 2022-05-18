@@ -12,7 +12,6 @@ using System.Collections.Generic;
 
 public class DownloadLoadTest : CustomBehaviour
 {
-    public BundleSystemConfig bundleSystemConfig;
     public Image progressbar;
 
     private void Start()
@@ -24,8 +23,8 @@ public class DownloadLoadTest : CustomBehaviour
     private IEnumerator Fetcher() 
     { Debug.Log("st2");
         
-        BundleSystem.Initialize(bundleSystemConfig);
-        
+        BundleSystem.Initialize();
+
         // Task<List<string>> downloadTask = BundleSystem.CheckForContentUpdate();
         //
         // while (!downloadTask.IsCompleted)
@@ -40,7 +39,8 @@ public class DownloadLoadTest : CustomBehaviour
         // }
         // Debug.Log("Update check 1 done");
         //
-        // Task download = Downloader.DownloadBundle("content 3",amount => { progressbar.fillAmount = amount; });
+        
+         Task download = Downloader.DownloadBundle("content 3", DownloadProgress => { progressbar.fillAmount = DownloadProgress;});
         // Task download2 = Downloader.DownloadBundle("content 3",amount => { progressbar.fillAmount = amount; });
         //
         // while(!download.IsCompleted)

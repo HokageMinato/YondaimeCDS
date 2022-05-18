@@ -16,7 +16,7 @@ namespace YondaimeCDS
             _onProgressChanged = onProgressChanged;
 
 
-            string absoluteSavePath = Path.Combine(Config.STORAGE_PATH, bundleName);
+            string absoluteSavePath = Path.Combine(BundleSystemConfig.STORAGE_PATH, bundleName);
             bool downloadSuccess = await DownloadBundleContent(bundleName, absoluteSavePath);
             
             _onProgressChanged = null;
@@ -25,7 +25,7 @@ namespace YondaimeCDS
 
         public async Task<byte[]> DownloadContent(string bundleName)
         {
-            string url = Path.Combine(Config.REMOTE_URL, bundleName);
+            string url = Path.Combine(BundleSystemConfig.REMOTE_URL, bundleName);
 
             using (UnityWebRequest downloadRequest = UnityWebRequest.Get(url))
             {
@@ -33,7 +33,6 @@ namespace YondaimeCDS
 
                 while (!downloadRequest.isDone)
                 {
-                    _onProgressChanged?.Invoke(downloadRequest.downloadProgress);
                     await Task.Yield();
                 }
 
@@ -52,11 +51,10 @@ namespace YondaimeCDS
 
         private async Task<bool> DownloadBundleContent(string bundleName, string absoluteSavePath)
         {
-            string url = Path.Combine(Config.REMOTE_URL, bundleName);
+            string url = Path.Combine(BundleSystemConfig.REMOTE_URL, bundleName);
             using (UnityWebRequest downloadRequest = UnityWebRequest.Get(url))
             {
                 downloadRequest.downloadHandler = new DownloadHandlerFile(absoluteSavePath, true);
-
                 downloadRequest.SendWebRequest();
 
                 while (!downloadRequest.isDone)
