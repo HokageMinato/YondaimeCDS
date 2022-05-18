@@ -21,6 +21,7 @@ namespace YondaimeCDS
         public static void Initialize()
         {
             _config = IOUtils.LoadFromResourcesTextAsset<BundleSystemConfig>(Constants.SYSTEM_SETTINGS);
+            Debug.Log(_config.remoteURL);
             ManifestTracker.Initialize(_config.serializedScriptManifest);
             _IS_INITIALZIED = true;
         }

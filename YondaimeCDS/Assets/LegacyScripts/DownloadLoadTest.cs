@@ -17,6 +17,7 @@ public class DownloadLoadTest : CustomBehaviour
 
     private void Start()
     {
+        
         StartCoroutine(Fetcher());
     }
 
@@ -24,40 +25,14 @@ public class DownloadLoadTest : CustomBehaviour
 
     private IEnumerator Fetcher() 
     {
-        string bundleName = "payload.zip";
-        string baseurl = "https://github.com/HokageMinato/YondaimeCDSContents/raw/main/";
-       
-        string absoluteUrl = Path.Combine(baseurl, bundleName);
-        string absoluteSavePath = Path.Combine(Application.persistentDataPath, bundleName);
-
-
-        using (UnityWebRequest downloadRequest = UnityWebRequest.Get(absoluteUrl))
+        
+        BundleSystem.Initialize();
+        Task update = BundleSystem.CheckForContentUpdate();
+        while (!update.IsCompleted) 
         {
-
-
-            downloadRequest.downloadHandler = new DownloadHandlerFile(absoluteSavePath);
-            downloadRequest.SendWebRequest();
-
-            
-
-            while (!downloadRequest.isDone) 
-            { 
-                yield return null;
-                progressbar.fillAmount = downloadRequest.downloadProgress;
-            }
-
-
-            if (downloadRequest.result == UnityWebRequest.Result.Success)
-            {
-                
-                Debug.Log("success");
-            }
-            else 
-            { 
-                 Debug.Log(downloadRequest.error);
-            }
-
+            yield return null;  
         }
+        
     }
 
     

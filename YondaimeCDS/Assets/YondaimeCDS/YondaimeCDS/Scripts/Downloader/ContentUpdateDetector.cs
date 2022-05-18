@@ -48,7 +48,7 @@ namespace YondaimeCDS
         {
             await DownloadManifestHash();
 
-            if(!ServerAssetManifestPresent())
+            if(!ServerManifestHashPresent())
                 return null; 
 
             if (!AssetManifestUpdateDetected())
@@ -93,9 +93,9 @@ namespace YondaimeCDS
             return LocalAssetManifest != null;
         }
         
-        private bool ServerAssetManifestPresent()
+        private bool ServerManifestHashPresent()
         {
-            return _serverAssetManifest != null;
+            return _serverHashManifest != null;
         }
 
         private bool AssetManifestUpdateDetected()

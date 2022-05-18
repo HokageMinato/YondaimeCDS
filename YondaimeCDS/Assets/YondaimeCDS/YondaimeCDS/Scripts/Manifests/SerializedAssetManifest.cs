@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.Build.Pipeline;
 
 
 namespace YondaimeCDS {
@@ -17,7 +16,7 @@ namespace YondaimeCDS {
         [SerializeField]
         private List<string> pendingUpdates = new List<string>();
 
-        //public string bit;
+
 
         public List<string> PendingUpdates { get { return pendingUpdates; } }
         public List<string> Keys { get { return m_Keys; } }
