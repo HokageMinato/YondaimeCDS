@@ -1,49 +1,24 @@
-using System;
-using System.IO;
-using System.Threading.Tasks;
-using UnityEngine.Networking;
 
 namespace YondaimeCDS
 {
-    public class DownloadedDataTracker
+    public static class DownloadedDataTracker
     {
-        private const string ResponseHeader = "Content-Length";
-
-        public async Task<double> GetRemainingDownloadSize(string assetName)
+        public static double RequestBundleSize(string bundleName)
         {
-            double downloadedDataSize = IOUtils.GetOnDiskDataSize(assetName);
-            double assetSize = await RequestBundleSize(Path.Combine(BundleSystemConfig.REMOTE_URL, assetName));
-            if (assetSize < 0)
-                return -1;
+            double downloadedDataSize = IOUtils.GetOnDiskDataSize(bundleName);
+            double assetSize = ManifestTracker.LocalAssetManifest.GetBundleSize(bundleName);
 
-            if (downloadedDataSize < 0)
-                return assetSize;
-
-
-            return downloadedDataSize - assetSize;
+            return assetSize - downloadedDataSize;
         }
 
-
-        private async Task<double> RequestBundleSize(string url)
+        public static double GetPendingDownloadSizeInMB(string bundleName)
         {
-            using (UnityWebRequest downloadRequest = UnityWebRequest.Head(url))
-            {
-                downloadRequest.SendWebRequest();
+            return GetPendingDownloadSizeInKB(bundleName) / 1000;
+        }
 
-                while (!downloadRequest.isDone)
-                {
-                    await Task.Yield();
-                }
-
-                if (downloadRequest.result == UnityWebRequest.Result.Success)
-                {
-                    return (Convert.ToDouble(downloadRequest.GetResponseHeader(ResponseHeader)));
-                }
-                else
-                {
-                    return -1;
-                }
-            }
+        public static double GetPendingDownloadSizeInKB(string bundleName)
+        {
+            return RequestBundleSize(bundleName) / 1000;
         }
     }
 }

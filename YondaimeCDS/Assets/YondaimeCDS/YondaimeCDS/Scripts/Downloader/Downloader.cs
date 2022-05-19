@@ -20,9 +20,9 @@ namespace YondaimeCDS
         #endregion
 
 
-        public static async Task<List<string>> CheckForContentUpdate()
+        public static async Task<IReadOnlyList<string>> CheckForContentUpdate()
         {
-            return new List<string>(await new ContentUpdateDetector().GetUpdates());
+            return await new ContentUpdateDetector().GetUpdates();
         }
 
         public static async Task DownloadBundle(string assetName, Action<float> onProgressChanged = null)
@@ -51,20 +51,16 @@ namespace YondaimeCDS
                 UpdateLocalManifest(assetName);
         }
 
-        public static async Task<double> CalculateRemainingDownloadSize(string assetName)
-        {
-            return await new DownloadedDataTracker().GetRemainingDownloadSize(assetName);
-        }
         
         private static void UpdateLocalManifest(string bundleName)
         {
-            LocalAssetManifest.PendingUpdates.Remove(bundleName);
+            LocalAssetManifest.MarkBundleDownloaded(bundleName);
             ManifestTracker.UpdateAssetManifestDiskContents();
         }
 
         private static bool IsValidDownloadRequest(string bundleName)
         {
-            return LocalAssetManifest.PendingUpdates.Contains(bundleName);
+            return LocalAssetManifest.IsBundleDownloadPending(bundleName);
         }
 
         private static bool IsDownloadAlreadyInProgress(string bundleName) 

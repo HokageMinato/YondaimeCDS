@@ -27,10 +27,25 @@ public class DownloadLoadTest : CustomBehaviour
     {
         
         BundleSystem.Initialize();
-        Task update = BundleSystem.CheckForContentUpdate();
+        Task<IReadOnlyList<string>> update = BundleSystem.CheckForContentUpdate();
         while (!update.IsCompleted) 
         {
             yield return null;  
+        }
+
+        while (update.Result.Count > 0)
+        {
+            Task downloadTask = BundleSystem.DownloadBundle(update.Result[update.Result.Count-1]);
+            while (!downloadTask.IsCompleted)
+            {
+                yield return null;
+            }
+        }
+
+        Debug.Log(update.Result.Count);
+        foreach (var item in update.Result)
+        {
+            Debug.Log(item);
         }
         
     }

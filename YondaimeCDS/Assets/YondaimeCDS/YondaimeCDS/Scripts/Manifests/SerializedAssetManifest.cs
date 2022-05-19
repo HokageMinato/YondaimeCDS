@@ -17,13 +17,12 @@ namespace YondaimeCDS {
         private List<string> pendingUpdates = new List<string>();
 
 
-
-        public List<string> PendingUpdates { get { return pendingUpdates; } }
+        public IReadOnlyList<string> PendingUpdates { get { return pendingUpdates; } }
         public List<string> Keys { get { return m_Keys; } }
 
         private Dictionary<string, BundleDetails> m_Details;
 
-        public void GenerateUpdateList(SerializedAssetManifest serverManifest,ref List<string> scriptFilteredBundleList)
+        public void GenerateUpdateList(SerializedAssetManifest serverManifest, ref List<string> scriptFilteredBundleList)
         {
             for (int i = 0; i < scriptFilteredBundleList.Count;)
             {
@@ -31,7 +30,7 @@ namespace YondaimeCDS {
                 Hash128 serverHashValue = serverManifest.m_Details[bundleName].Hash;
                 Hash128 localHashValue = m_Details[bundleName].Hash;
 
-                if (serverHashValue.Equals(localHashValue)) 
+                if (serverHashValue.Equals(localHashValue))
                 {
                     scriptFilteredBundleList.RemoveAt(i);
                     continue;
@@ -40,12 +39,11 @@ namespace YondaimeCDS {
                 i++;
             }
 
-            Debug.Log("No bundle updates");
         }
 
         public void UpdateManifestData(SerializedAssetManifest serverManifest, ref List<string> scriptFilteredBundleList)
         {
-            PendingUpdates.AddRange(scriptFilteredBundleList);
+            pendingUpdates.AddRange(scriptFilteredBundleList);
             Dictionary<string, BundleDetails> updates = serverManifest.m_Details;
 
             for (int i = 0; i < scriptFilteredBundleList.Count; i++)
@@ -53,7 +51,7 @@ namespace YondaimeCDS {
                 m_Details[scriptFilteredBundleList[i]] = updates[scriptFilteredBundleList[i]];
                 Debug.Log($"updated details for {scriptFilteredBundleList[i]}");
             }
-            
+
         }
 
         public void OnAfterDeserialize()
@@ -79,7 +77,31 @@ namespace YondaimeCDS {
         }
 
         
-        
+
+        public double GetBundleSize(string bundleName) 
+        {
+            return m_Details[bundleName].BundleSize;
+        }
+
+        public void MarkBundleDownloaded(string bundleName)
+        {
+            pendingUpdates.Remove(bundleName);
+        }
+
+        public bool IsBundleDownloadPending(string bundleName)
+        {
+            return pendingUpdates.Contains(bundleName);
+        }
+
+#if UNITY_EDITOR
+        public void SetBundleSizeOf(string bundleName,double bundleSize)
+        {
+            BundleDetails details = m_Details[bundleName];
+            details.BundleSize = bundleSize;
+            m_Details[bundleName] = details;
+        }
+
+        #endif
 
     }
 

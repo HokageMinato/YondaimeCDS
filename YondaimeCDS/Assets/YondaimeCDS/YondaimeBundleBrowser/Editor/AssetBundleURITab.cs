@@ -57,7 +57,10 @@ namespace AssetBundleBrowser
             config.remoteURL = m_UserData.remoteURL;
             config.autoUpdateCatelog = m_UserData.autoUpdateCatelog;
             ManifestGenerator.WriteConfigToResources(config);
-            
+
+            AssetDatabase.Refresh();
+            AssetDatabase.SaveAssets();
+
         }
 
 

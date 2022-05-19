@@ -44,18 +44,16 @@ namespace YondaimeCDS
         private List<string> _compatibleBundles = new List<string>();
 
 
-        public async Task<List<string>> GetUpdates()
+        public async Task<IReadOnlyList<string>> GetUpdates()
         {
             await DownloadManifestHash();
 
-            if(!ServerManifestHashPresent())
-                return null; 
+            if (!ServerManifestHashPresent() && !LocalAssetManifestPresent())
+                return null;
 
-            if (!AssetManifestUpdateDetected())
-            {
-                Debug.Log("No updates,Pending updates include");
+            if (!AssetManifestHashUpdateDetected())
                 return LocalAssetManifest.PendingUpdates;
-            }
+
 
             await DownloadScriptManifest();
             FilterScriptIncompitableBundles();
@@ -98,10 +96,13 @@ namespace YondaimeCDS
             return _serverHashManifest != null;
         }
 
-        private bool AssetManifestUpdateDetected()
+        private bool AssetManifestHashUpdateDetected()
         {
             if (!LocalAssetManifestPresent())
                 return true;
+
+            if(!ServerManifestHashPresent())
+                return false;
             
             return _serverHashManifest.AssetHash != LocalHashManifest.AssetHash;
         }

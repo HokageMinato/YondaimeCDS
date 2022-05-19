@@ -1,1 +1,1 @@
-{"m_Keys":["so","content (1)"],"m_Values":[{"m_FileName":"AssetBundles/Android/so","m_Crc":3559820893,"m_Hash":"94fee87f7c80a4bfb40584062c4a3bc6","m_Dependencies":[]},{"m_FileName":"AssetBundles/Android/content (1)","m_Crc":475818424,"m_Hash":"335f18fe7d47433b8eb0add956bec2e1","m_Dependencies":[]}],"pendingUpdates":[]}
+{"m_Keys":["content (1)"],"m_Values":[{"m_FileName":"AssetBundles/Android/content (1)","m_Crc":2831271434,"m_Hash":"634726bdd4c6cc5e10644aee9042b15d","m_Dependencies":[],"BundleSize":91222.0}],"pendingUpdates":[]}

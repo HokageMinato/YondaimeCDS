@@ -11,47 +11,15 @@ namespace YondaimeCDS
     public class ManifestGenerator
     {
 
-        public static string SERIZ_ASSET_MANIFEST;
-        public static string SERIZ_SCRIPT_MANIFEST;
-        public static string SERIZ_HASH_MANIFEST;
-
-
         public static void GenerateManifests(CompatibilityAssetBundleManifest buildManifest, string outputDirectory)
         {
-            string serializedBundleManifest = IOUtils.Serialize(buildManifest);
-            string manifestHash = ComputeHash(IOUtils.StringToBytes(serializedBundleManifest));
-
-            SerializedAssetManifest manifest = JsonUtility.FromJson<SerializedAssetManifest>(serializedBundleManifest);
-            serializedBundleManifest = IOUtils.Serialize(manifest);
-            SERIZ_ASSET_MANIFEST = serializedBundleManifest;
-
-
-            ScriptManifest scriptManifest = GetScriptManifest();
-            string serializedScriptManifest = IOUtils.Serialize(scriptManifest);
-            SERIZ_SCRIPT_MANIFEST = serializedScriptManifest;
-            
-
-            HashManifest hashManifest = new HashManifest();
-            hashManifest.AssetHash = manifestHash;
-            string serializedHashManifest = IOUtils.Serialize(hashManifest);
-            SERIZ_HASH_MANIFEST = serializedHashManifest;
-
-            byte[] manifestData = IOUtils.StringToBytes(serializedBundleManifest);
-            byte[] scriptManifestData = IOUtils.StringToBytes(serializedScriptManifest);
-            byte[] hashManifestData = IOUtils.StringToBytes(serializedHashManifest);
-
-
-            File.WriteAllBytes(Path.Combine(outputDirectory, Constants.ASSET_MANIFEST), manifestData);
-            File.WriteAllBytes(Path.Combine(outputDirectory, Constants.MANIFEST_HASH), hashManifestData);
-            File.WriteAllBytes(Path.Combine(outputDirectory, Constants.SCRIPT_MANIFEST), scriptManifestData);
-
-            WriteConfigToResources(new BundleSystemConfig() { serializedScriptManifest = serializedScriptManifest });
-
-            File.Delete(Path.Combine(outputDirectory, $"{Path.GetDirectoryName(outputDirectory)}.manifest"));
-            File.Delete(Path.Combine(outputDirectory, "buildlogtep.json"));
-
+            SerializedAssetManifest scriptManifest = GenenrateAssetManifestFrom(buildManifest, outputDirectory);
+            GenerateManifestHashFromContentsOf(scriptManifest, outputDirectory);
+            GenerateScriptManifest(outputDirectory);
+            DeleteExtraFilesAt(outputDirectory);
+            AssetDatabase.Refresh();
+            AssetDatabase.SaveAssets();
         }
-
 
         public static void WriteConfigToResources(BundleSystemConfig config)
         {
@@ -60,11 +28,64 @@ namespace YondaimeCDS
                 Directory.CreateDirectory(directory);
 
             string path = Path.Combine(directory, $"{Constants.SYSTEM_SETTINGS}.txt");
-            File.WriteAllText(path,IOUtils.Serialize(config));
+            File.WriteAllText(path, IOUtils.Serialize(config));
         }
 
 
-        static ScriptManifest GetScriptManifest()
+        private static void GenerateManifestHashFromContentsOf(SerializedAssetManifest compatibilityAssetBundleManifest, string outputDirectory)
+        {
+            string manifestHash = ComputeHash(IOUtils.StringToBytes(IOUtils.Serialize(compatibilityAssetBundleManifest)));
+            HashManifest hashManifest = new HashManifest();
+            hashManifest.AssetHash = manifestHash;
+            string serializedHashManifest = IOUtils.Serialize(hashManifest);
+            byte[] hashManifestData = IOUtils.StringToBytes(serializedHashManifest);
+            File.WriteAllBytes(Path.Combine(outputDirectory, Constants.MANIFEST_HASH), hashManifestData);
+        }
+
+        private static SerializedAssetManifest GenenrateAssetManifestFrom(CompatibilityAssetBundleManifest compatibilityBuildManifest, string outputDirectory)
+        {
+            SerializedAssetManifest manifest = IOUtils.Deserialize<SerializedAssetManifest>(IOUtils.Serialize(compatibilityBuildManifest));
+            CalculateSizesOfBundle(manifest, outputDirectory);
+            string serializedBundleManifest = IOUtils.Serialize(manifest);
+            byte[] manifestData = IOUtils.StringToBytes(serializedBundleManifest);
+            File.WriteAllBytes(Path.Combine(outputDirectory, Constants.ASSET_MANIFEST), manifestData);
+            return manifest;
+        }
+
+        private static void CalculateSizesOfBundle(SerializedAssetManifest manifest,string targetDirectory) 
+        {
+            List<string> bundles = manifest.Keys;
+            
+            foreach (var item in bundles)
+            {
+               FileInfo bundleInfo = new FileInfo (Path.Combine(targetDirectory,item));
+               manifest.SetBundleSizeOf(item,bundleInfo.Length);
+               Debug.Log($"sizeData {item} -- {bundleInfo.Length}");
+            }
+            
+        }
+
+        private static void GenerateScriptManifest(string outputDirectory)
+        {
+            ScriptManifest scriptManifest = GetScriptManifest();
+            string serializedScriptManifest = IOUtils.Serialize(scriptManifest);
+            byte[] scriptManifestData = IOUtils.StringToBytes(serializedScriptManifest);
+            File.WriteAllBytes(Path.Combine(outputDirectory, Constants.SCRIPT_MANIFEST), scriptManifestData);
+            WriteConfigToResources(GenerateBundleSystemConfigData(serializedScriptManifest));
+        }
+
+        private static void DeleteExtraFilesAt(string outputDirectory)
+        {
+            File.Delete(Path.Combine(outputDirectory, $"{Path.GetDirectoryName(outputDirectory)}.manifest"));
+            File.Delete(Path.Combine(outputDirectory, "buildlogtep.json"));
+        }
+
+        private static BundleSystemConfig GenerateBundleSystemConfigData(string serializedScriptManifest) 
+        {
+            return new BundleSystemConfig() { serializedScriptManifest = serializedScriptManifest };
+        }
+
+        private static ScriptManifest GetScriptManifest()
         {
             string[] assetBundles = AssetDatabase.GetAllAssetBundleNames();
             int totalAssetBundleCount = assetBundles.Length;
@@ -133,6 +154,9 @@ namespace YondaimeCDS
             return hash.Replace("-", string.Empty);
         }
 
+       
+
+       
     }
 
 

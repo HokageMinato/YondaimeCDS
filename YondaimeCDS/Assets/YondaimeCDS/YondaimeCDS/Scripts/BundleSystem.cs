@@ -21,7 +21,6 @@ namespace YondaimeCDS
         public static void Initialize()
         {
             _config = IOUtils.LoadFromResourcesTextAsset<BundleSystemConfig>(Constants.SYSTEM_SETTINGS);
-            Debug.Log(_config.remoteURL);
             ManifestTracker.Initialize(_config.serializedScriptManifest);
             _IS_INITIALZIED = true;
         }
@@ -29,7 +28,7 @@ namespace YondaimeCDS
         #endregion
 
         #region CONTENT_TRACKING
-        public static Task<List<string>> CheckForContentUpdate()
+        public static Task<IReadOnlyList<string>> CheckForContentUpdate()
         {
             if (!SystemInitializedCheck())
                 return null;
@@ -47,11 +46,7 @@ namespace YondaimeCDS
 
             if (IsCatelogSetToAutoUpdate())
             {
-                List<string> updates = await CheckForContentUpdate();
-                if (updates!=null && updates.Contains(bundleName)) 
-                {
-                    await DownloadBundle(bundleName);
-                }
+                
             }
 
             T loadedAsset = await Loader.LoadAsset<T>(bundleName, assetName);
@@ -70,6 +65,24 @@ namespace YondaimeCDS
 
         #region DOWNLOAD_HANDLES
 
+        private static async Task DownloadUpdatedBundle(string bundleName)
+        {
+            IReadOnlyList<string> updates = await CheckForContentUpdate();
+            if (updates != null && IsToBeUpdated(bundleName))
+                await DownloadBundle(bundleName);
+
+
+            bool IsToBeUpdated(string bundleName)
+            {
+                for (int i = 0; i < updates.Count; i++)
+                    if (updates[i] == bundleName)
+                        return true;
+
+                return false;
+            }
+        }
+
+
         public static Task DownloadBundle(string bundleName, Action<float> OnProgressChanged=null)
         {
             if (!SystemInitializedCheck())
@@ -80,12 +93,23 @@ namespace YondaimeCDS
 
        
 
-        public static Task<double> CalculateRemainingDownloadSize(string assetName)
+        public static double GetPendingDownloadSize(string assetName,SizeUnit sizeUnit = SizeUnit.Byte)
         {
             if (!SystemInitializedCheck())
-                return null;
+                return -1;
 
-            return Downloader.CalculateRemainingDownloadSize(assetName);
+            switch (sizeUnit)
+            {
+                case SizeUnit.MB:
+                    return DownloadedDataTracker.GetPendingDownloadSizeInMB(assetName);
+                    
+                case SizeUnit.KB:
+                    return DownloadedDataTracker.GetPendingDownloadSizeInKB(assetName);
+                    
+                default:
+                    return DownloadedDataTracker.RequestBundleSize(assetName);
+            }
+
         }
 
         #endregion
@@ -108,6 +132,15 @@ namespace YondaimeCDS
         public static void Log(object data) 
         {
             Debug.Log($"bsys {data}");
+        }
+        #endregion
+
+        #region INTERNAL_DECLARATIONS
+        public enum SizeUnit
+        {
+            Byte,
+            MB,
+            KB
         }
         #endregion
     }
