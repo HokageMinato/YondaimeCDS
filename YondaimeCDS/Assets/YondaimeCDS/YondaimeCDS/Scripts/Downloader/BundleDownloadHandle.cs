@@ -7,11 +7,11 @@ using UnityEngine.Networking;
 namespace YondaimeCDS 
 {
 
-    public class BundleDownloadHandle
+    internal class BundleDownloadHandle
     {
         private Action<float> _onProgressChanged;
 
-        public async Task<bool> DownloadBundle(string bundleName, Action<float> onProgressChanged = null)
+        internal async Task<bool> DownloadBundle(string bundleName, Action<float> onProgressChanged = null)
         {
             _onProgressChanged = onProgressChanged;
             
@@ -24,7 +24,7 @@ namespace YondaimeCDS
             return downloadSuccess;
         }
 
-        public async Task<byte[]> DownloadContent(string bundleName)
+        internal async Task<byte[]> DownloadContent(string bundleName)
         {
             string url = Path.Combine(BundleSystemConfig.REMOTE_URL, bundleName);
 

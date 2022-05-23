@@ -4,7 +4,7 @@ using UnityEngine;
 
 namespace YondaimeCDS
 {
-    public class ContentUpdateDetector
+    internal class ContentUpdateDetector
     {
         private static string MANIFEST_HASH
         {
@@ -44,7 +44,7 @@ namespace YondaimeCDS
         private List<string> _compatibleBundles = new List<string>();
 
 
-        public async Task<IReadOnlyList<string>> GetUpdates()
+        internal async Task<IReadOnlyList<string>> GetUpdates()
         {
             await DownloadManifestHash();
 
@@ -104,7 +104,7 @@ namespace YondaimeCDS
             if(!ServerManifestHashPresent())
                 return false;
             
-            return _serverHashManifest.AssetHash != LocalHashManifest.AssetHash;
+            return _serverHashManifest._assetHash != LocalHashManifest._assetHash;
         }
 
         private bool BundleUpdatesPresent()

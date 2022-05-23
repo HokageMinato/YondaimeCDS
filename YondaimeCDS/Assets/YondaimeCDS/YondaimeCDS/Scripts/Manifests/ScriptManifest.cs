@@ -5,39 +5,21 @@ using System.Collections.Generic;
 namespace YondaimeCDS {
 
     [Serializable]
-    public class ScriptManifest
+    public class ScriptManifest: ISerializationCallbackReceiver
     {
         [SerializeField] private BundleScriptHashTuple[] bundleWiseScriptHashes;
-        [SerializeField] private List<string> allScriptHashes = new List<string>();
-        //public string bit;
-
-        #if UNITY_EDITOR
-        public BundleScriptHashTuple[] BundleWiseScriptHashes => bundleWiseScriptHashes;
+        [SerializeField] private List<string> allScriptHashList = new List<string>();
         
-        #endif
+        private HashSet<string> allScriptHashes = new HashSet<string>();
 
-        public ScriptManifest(int entryCount)
-        {
-            bundleWiseScriptHashes = new BundleScriptHashTuple[entryCount];
-        }
 
-        public ScriptManifest()
+      
+        internal ScriptManifest()
         {
         }
 
 
-        public void AddScriptHashes(List<string> scriptHashes)
-        {
-            for (int i = 0; i < scriptHashes.Count; i++)
-            {
-                string currentScriptHash = scriptHashes[i];
-                if (!allScriptHashes.Contains(currentScriptHash))
-                    allScriptHashes.Add(currentScriptHash);
-            }
-        }
-
-
-        public List<string> GetCompatibleBundleList(ScriptManifest serverScriptManifest)
+        internal List<string> GetCompatibleBundleList(ScriptManifest serverScriptManifest)
         {
             List<string> compatibleBundles = ExtractBundleNames(serverScriptManifest);
 
@@ -82,21 +64,58 @@ namespace YondaimeCDS {
             return compatibleBundles;
         }
 
+        public void OnBeforeSerialize()
+        {}
+
+        public void OnAfterDeserialize()
+        {
+            allScriptHashes = new HashSet<string>(allScriptHashList);
+        }
+
+
+        #if UNITY_EDITOR
+        public BundleScriptHashTuple[] BundleWiseScriptHashes
+        {
+            get
+            {
+                return bundleWiseScriptHashes;
+            }
+        }
+
+        public void AddScriptHashes(List<string> scriptHashes)
+        {
+            for (int i = 0; i < scriptHashes.Count; i++)
+            {
+                string currentScriptHash = scriptHashes[i];
+                if (!allScriptHashList.Contains(currentScriptHash))
+                    allScriptHashList.Add(currentScriptHash);
+            }
+        }
+
+        public ScriptManifest(int entryCount)
+        {
+            bundleWiseScriptHashes = new BundleScriptHashTuple[entryCount];
+        }
+
+        #endif
+
     }
 
-    
-    
+
+
     [Serializable]
     public class BundleScriptHashTuple
     {
-        public string BundleName;
-        public List<string> BundleSciptHashes;
+        [SerializeField] internal string BundleName;
+        [SerializeField] internal List<string> BundleSciptHashes;
 
+        #if UNITY_EDITOR
         public BundleScriptHashTuple(string bundleName, List<string> bundleScriptHash)
         {
             BundleName = bundleName;
             BundleSciptHashes = bundleScriptHash;
         }
+        #endif
     }
 
 }

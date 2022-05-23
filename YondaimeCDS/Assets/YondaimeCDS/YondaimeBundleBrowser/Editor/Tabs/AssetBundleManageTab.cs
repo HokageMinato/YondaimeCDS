@@ -20,7 +20,7 @@ namespace AssetBundleBrowser
 
         Rect m_Position;
 
-        AssetBundleTree m_BundleTree;
+        AssetBundleTree m_BundleTree; 
         AssetListTree m_AssetList;
         MessageList m_MessageList;
         BundleDetailList m_DetailsList;
@@ -38,8 +38,8 @@ namespace AssetBundleBrowser
         private static float s_UpdateDelay = 0f;
 
         SearchField m_searchField;
-
         EditorWindow m_Parent = null;
+        public AssetBundleTree BundleTree { get { return m_BundleTree; } }
 
         internal AssetBundleManageTab()
         {
@@ -107,8 +107,66 @@ namespace AssetBundleBrowser
         internal void OnGUI(Rect pos)
         {
             m_Position = pos;
+            RefreshBundleTree();
+            m_Parent.Repaint();
 
-            if(m_BundleTree == null)
+            HandleHorizontalResize();
+            HandleVerticalResize();
+
+
+            if (AssetBundleModel.Model.BundleListIsEmpty())
+            {
+                m_BundleTree.OnGUI(m_Position);
+                var style = new GUIStyle(GUI.skin.label);
+                style.alignment = TextAnchor.MiddleCenter;
+                style.wordWrap = true;
+                GUI.Label(
+                    new Rect(m_Position.x + 1f, m_Position.y + 1f, m_Position.width - 2f, m_Position.height - 2f),
+                    new GUIContent(AssetBundleModel.Model.GetEmptyMessage()),
+                    style);
+            }
+            else
+            {
+                //Left half
+                var bundleTreeRect = new Rect(
+                    m_Position.x,
+                    m_Position.y,
+                    m_HorizontalSplitterRect.x,
+                    m_VerticalSplitterRectLeft.y - m_Position.y);
+
+                m_BundleTree.OnGUI(bundleTreeRect);
+                m_DetailsList.OnGUI(new Rect(
+                    bundleTreeRect.x,
+                    bundleTreeRect.y + bundleTreeRect.height + k_SplitterWidth,
+                    bundleTreeRect.width,
+                    m_Position.height - bundleTreeRect.height - k_SplitterWidth * 2));
+
+                //Right half.
+                float panelLeft = m_HorizontalSplitterRect.x + k_SplitterWidth;
+                float panelWidth = m_VerticalSplitterRectRight.width - k_SplitterWidth * 2;
+                float searchHeight = 20f;
+                float panelTop = m_Position.y + searchHeight;
+                float panelHeight = m_VerticalSplitterRectRight.y - panelTop;
+                OnGUISearchBar(new Rect(panelLeft, m_Position.y, panelWidth, searchHeight));
+                m_AssetList.OnGUI(new Rect(
+                    panelLeft,
+                    panelTop,
+                    panelWidth,
+                    panelHeight));
+                m_MessageList.OnGUI(new Rect(
+                    panelLeft,
+                    panelTop + panelHeight + k_SplitterWidth,
+                    panelWidth,
+                    (m_Position.height - panelHeight) - k_SplitterWidth * 2));
+
+                if (m_ResizingHorizontalSplitter || m_ResizingVerticalSplitterRight || m_ResizingVerticalSplitterLeft)
+                    m_Parent.Repaint();
+            }
+        }
+
+        public void RefreshBundleTree()
+        {
+            if (m_BundleTree == null)
             {
                 if (m_AssetListState == null)
                     m_AssetListState = new TreeViewState();
@@ -132,60 +190,7 @@ namespace AssetBundleBrowser
                     m_BundleTreeState = new TreeViewState();
                 m_BundleTree = new AssetBundleTree(m_BundleTreeState, this);
                 m_BundleTree.Refresh();
-                m_Parent.Repaint();
-            }
-            
-            HandleHorizontalResize();
-            HandleVerticalResize();
-
-
-            if (AssetBundleModel.Model.BundleListIsEmpty())
-            {
-                m_BundleTree.OnGUI(m_Position);
-                var style = new GUIStyle(GUI.skin.label);
-                style.alignment = TextAnchor.MiddleCenter;
-                style.wordWrap = true;
-                GUI.Label(
-                    new Rect(m_Position.x + 1f, m_Position.y + 1f, m_Position.width - 2f, m_Position.height - 2f), 
-                    new GUIContent(AssetBundleModel.Model.GetEmptyMessage()),
-                    style);
-            }
-            else
-            {
-                //Left half
-                var bundleTreeRect = new Rect(
-                    m_Position.x,
-                    m_Position.y,
-                    m_HorizontalSplitterRect.x,
-                    m_VerticalSplitterRectLeft.y - m_Position.y);
                 
-                m_BundleTree.OnGUI(bundleTreeRect);
-                m_DetailsList.OnGUI(new Rect(
-                    bundleTreeRect.x,
-                    bundleTreeRect.y + bundleTreeRect.height + k_SplitterWidth,
-                    bundleTreeRect.width,
-                    m_Position.height - bundleTreeRect.height - k_SplitterWidth*2));
-                
-                //Right half.
-                float panelLeft = m_HorizontalSplitterRect.x + k_SplitterWidth;
-                float panelWidth = m_VerticalSplitterRectRight.width - k_SplitterWidth * 2;
-                float searchHeight = 20f;
-                float panelTop = m_Position.y + searchHeight;
-                float panelHeight = m_VerticalSplitterRectRight.y - panelTop;
-                OnGUISearchBar(new Rect(panelLeft, m_Position.y, panelWidth, searchHeight));
-                m_AssetList.OnGUI(new Rect(
-                    panelLeft,
-                    panelTop,
-                    panelWidth,
-                    panelHeight));
-                m_MessageList.OnGUI(new Rect(
-                    panelLeft,
-                    panelTop + panelHeight + k_SplitterWidth,
-                    panelWidth,
-                    (m_Position.height - panelHeight) - k_SplitterWidth * 2));
-
-                if (m_ResizingHorizontalSplitter || m_ResizingVerticalSplitterRight || m_ResizingVerticalSplitterLeft)
-                    m_Parent.Repaint();
             }
         }
 

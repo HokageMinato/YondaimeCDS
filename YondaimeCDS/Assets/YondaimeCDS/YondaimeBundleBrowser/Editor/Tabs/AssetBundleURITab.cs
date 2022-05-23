@@ -70,20 +70,23 @@ namespace AssetBundleBrowser
             m_ScrollPosition = EditorGUILayout.BeginScrollView(m_ScrollPosition);
             var centeredStyle = new GUIStyle(GUI.skin.GetStyle("Label"));
             centeredStyle.alignment = TextAnchor.UpperCenter;
-            GUILayout.Label(new GUIContent("URI setup"), centeredStyle);
+            
+            GUILayout.Label(new GUIContent("Configuration"), centeredStyle);
             EditorGUILayout.Space();
             GUILayout.BeginVertical();
-            EditorGUILayout.LabelField(new GUIContent("URL Settings"));
 
+            //URL Settings
+            EditorGUILayout.LabelField(new GUIContent("URL Settings"));
             EditorGUILayout.Space();
             var newPath = EditorGUILayout.TextField("Remote URL", m_UserData.remoteURL);
             if (!string.IsNullOrEmpty(newPath) && newPath != m_UserData.remoteURL)
                 m_UserData.remoteURL = newPath;
             
+            //AutoUpdate Toggle
             EditorGUILayout.Space();
             m_UserData.autoUpdateCatelog = GUILayout.Toggle(m_UserData.autoUpdateCatelog,new GUIContent("Auto Update Manifests"));
-   
-              
+
+            
 
             GUILayout.EndVertical();
             EditorGUILayout.EndScrollView();

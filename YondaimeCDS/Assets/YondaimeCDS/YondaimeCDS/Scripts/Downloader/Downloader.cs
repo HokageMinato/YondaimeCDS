@@ -5,7 +5,7 @@ using UnityEngine;
 
 namespace YondaimeCDS
 {
-    public static class Downloader
+    internal static class Downloader
     {
         #region PRIVATE_VARS
         private static HashSet<string> _activeDownloads = new HashSet<string>();
@@ -20,12 +20,12 @@ namespace YondaimeCDS
         #endregion
 
 
-        public static async Task<IReadOnlyList<string>> CheckForContentUpdate()
+        internal static async Task<IReadOnlyList<string>> CheckForContentUpdate()
         {
             return await new ContentUpdateDetector().GetUpdates();
         }
 
-        public static async Task DownloadBundle(string assetName, Action<float> onProgressChanged = null)
+        internal static async Task DownloadBundle(string assetName, Action<float> onProgressChanged = null)
         {
             if (IsDownloadAlreadyInProgress(assetName))
             {
@@ -35,7 +35,7 @@ namespace YondaimeCDS
            
             if (!IsValidDownloadRequest(assetName))
             {
-                Debug.Log("Bundle already Downloaded");
+                Debug.Log("Bundle already Downloaded or Invalid key");
                 return;
             }
 

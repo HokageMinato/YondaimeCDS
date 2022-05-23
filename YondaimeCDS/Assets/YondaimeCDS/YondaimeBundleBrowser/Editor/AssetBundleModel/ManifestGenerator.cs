@@ -76,7 +76,7 @@ namespace YondaimeCDS
 
         private static void DeleteExtraFilesAt(string outputDirectory)
         {
-            File.Delete(Path.Combine(outputDirectory, $"{Path.GetDirectoryName(outputDirectory)}.manifest"));
+            File.Delete(Path.Combine(outputDirectory, $"{Path.GetFileName(outputDirectory)}.manifest"));
             File.Delete(Path.Combine(outputDirectory, "buildlogtep.json"));
         }
 
@@ -101,12 +101,11 @@ namespace YondaimeCDS
                     string bundleName = assetBundles[i];
                     List<string> bundleScriptHashes = GenerateScriptHashesOfScriptDepencendies(GetScriptDependenciesOf(bundleAssetNames[j]));
                     manifest[i] = new BundleScriptHashTuple(bundleName, bundleScriptHashes);
-                    mf.AddScriptHashes(bundleScriptHashes);
+                    mf.AddScriptHashes(bundleScriptHashes); 
                 }
             }
 
 
-            //SaveInLocalScriptable
             return mf;
         }
 

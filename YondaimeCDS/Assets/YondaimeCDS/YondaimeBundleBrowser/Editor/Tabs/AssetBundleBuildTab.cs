@@ -5,6 +5,7 @@ using System.IO;
 using System.Runtime.Serialization.Formatters.Binary;
 
 using AssetBundleBrowser.AssetBundleDataSource;
+using UnityEditor.IMGUI.Controls;
 
 namespace AssetBundleBrowser
 {
@@ -54,6 +55,9 @@ namespace AssetBundleBrowser
         ToggleData m_CopyToStreaming;
         GUIContent m_TargetContent;
         GUIContent m_CompressionContent;
+        AssetBundleManageTab m_bundleManageTab;
+        HashSet<string> localBundlesData = new HashSet<string> ();
+
         internal enum CompressOptions
         {
             Uncompressed = 0,
@@ -74,11 +78,13 @@ namespace AssetBundleBrowser
             m_AdvancedSettings = false;
             m_UserData = new BuildTabData();
             m_UserData.m_OnToggles = new List<string>();
+
             m_UserData.m_UseDefaultPath = true;
         }
 
         internal void OnDisable()
         {
+            m_UserData.m_localBundles = new List<string>(localBundlesData);
             var dataPath = System.IO.Path.GetFullPath(".");
             dataPath = dataPath.Replace("\\", "/");
             dataPath += "/Library/AssetBundleBrowserBuild.dat";
@@ -93,6 +99,7 @@ namespace AssetBundleBrowser
         internal void OnEnable(EditorWindow parent)
         {
             m_InspectTab = (parent as AssetBundleBrowserMain).m_InspectTab;
+            m_bundleManageTab = AssetBundleBrowserMain.instance.m_ManageTab;
 
             //LoadData...
             var dataPath = System.IO.Path.GetFullPath(".");
@@ -166,6 +173,11 @@ namespace AssetBundleBrowser
             {
                 ResetPathToDefault();
             }
+
+            if(m_UserData.m_localBundles == null)
+                m_UserData.m_localBundles = new List<string>(); 
+
+            localBundlesData = new HashSet<string>(m_UserData.m_localBundles);
         }
 
         internal void OnGUI()
@@ -176,6 +188,8 @@ namespace AssetBundleBrowser
             centeredStyle.alignment = TextAnchor.UpperCenter;
             GUILayout.Label(new GUIContent("Build setup"), centeredStyle);
             //basic options
+            EditorGUILayout.Space();
+            EditorGUILayout.Space();
             EditorGUILayout.Space();
             GUILayout.BeginVertical();
 
@@ -193,7 +207,6 @@ namespace AssetBundleBrowser
                     }
                 }
             }
-
 
             ////output path
             using (new EditorGUI.DisabledScope (!AssetBundleModel.Model.DataSource.CanSpecifyBuildOutputDirectory)) {
@@ -280,6 +293,17 @@ namespace AssetBundleBrowser
                 }
             }
 
+            //bundle Compatibility
+            EditorGUILayout.Space();
+            EditorGUILayout.Space();
+            EditorGUILayout.Space();
+            EditorGUILayout.Space();
+            EditorGUILayout.LabelField(new GUIContent("Is Bundle Locally Available:"),centeredStyle);
+            DrawLocalAssetTable();
+              
+            
+            
+
             // build.
             EditorGUILayout.Space();
             if (GUILayout.Button("Build") )
@@ -360,11 +384,10 @@ namespace AssetBundleBrowser
 
             AssetDatabase.Refresh(ImportAssetOptions.ForceUpdate);
 
-            if(m_CopyToStreaming.state)
-                DirectoryCopy(m_UserData.m_OutputPath, m_streamingPath);
+            CopyToStreamingAssets(m_UserData.m_OutputPath, m_streamingPath,m_UserData.m_localBundles);
         }
 
-        private static void DirectoryCopy(string sourceDirName, string destDirName)
+        private static void CopyToStreamingAssets(string sourceDirName, string destDirName,List<string> locallyIncludedFiles)
         {
             // If the destination directory doesn't exist, create it.
             if (!Directory.Exists(destDirName))
@@ -382,9 +405,12 @@ namespace AssetBundleBrowser
             {
                 var fileDirName = Path.GetDirectoryName(filePath).Replace("\\", "/");
                 var fileName = Path.GetFileName(filePath);
-                string newFilePath = Path.Combine(fileDirName.Replace(sourceDirName, destDirName), fileName);
 
-                File.Copy(filePath, newFilePath, true);
+                if (locallyIncludedFiles.Contains(fileName))
+                {
+                    string newFilePath = Path.Combine(fileDirName.Replace(sourceDirName, destDirName), fileName);
+                    File.Copy(filePath, newFilePath, true);
+                }
             }
         }
 
@@ -402,6 +428,8 @@ namespace AssetBundleBrowser
                 //EditorUserBuildSettings.SetPlatformSettings(EditorUserBuildSettings.activeBuildTarget.ToString(), "AssetBundleOutputPath", m_OutputPath);
             }
         }
+
+
         private void ResetPathToDefault()
         {
             m_UserData.m_UseDefaultPath = true;
@@ -447,6 +475,37 @@ namespace AssetBundleBrowser
             Switch = 38
         }
 
+        private void DrawLocalAssetTable()
+        {
+            AssetBundleTree tree = m_bundleManageTab.BundleTree;
+            if (tree == null)
+                m_bundleManageTab.RefreshBundleTree();
+            
+            if (tree != null)
+            {
+                IList<TreeViewItem> items = tree.GetRows();
+                foreach (TreeViewItem item in items)
+                {
+                    EditorGUILayout.BeginVertical();
+                    string bundleName = item.displayName;
+
+                     bool val = GUILayout.Toggle(localBundlesData.Contains(bundleName), new GUIContent(bundleName));
+                     if(val)
+                        localBundlesData.Add(bundleName);
+                     else
+                        localBundlesData.Remove(bundleName);
+                
+
+
+                    EditorGUILayout.EndVertical();
+                }
+            }
+
+        }
+
+       
+
+
         [System.Serializable]
         internal class BuildTabData
         {
@@ -455,6 +514,7 @@ namespace AssetBundleBrowser
             internal CompressOptions m_Compression = CompressOptions.StandardCompression;
             internal string m_OutputPath = string.Empty;
             internal bool m_UseDefaultPath = true;
+            internal List<string> m_localBundles;
         }
     }
 

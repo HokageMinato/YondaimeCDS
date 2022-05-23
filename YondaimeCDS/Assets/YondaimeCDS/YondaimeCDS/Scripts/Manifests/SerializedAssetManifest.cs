@@ -7,6 +7,7 @@ namespace YondaimeCDS {
 
     public class SerializedAssetManifest : ISerializationCallbackReceiver
     {
+
         [SerializeField]
         private List<string> m_Keys;
 
@@ -17,12 +18,13 @@ namespace YondaimeCDS {
         private List<string> pendingUpdates = new List<string>();
 
 
-        public IReadOnlyList<string> PendingUpdates { get { return pendingUpdates; } }
-        public List<string> Keys { get { return m_Keys; } }
+        internal IReadOnlyList<string> PendingUpdates { get { return pendingUpdates; } }
+       
 
         private Dictionary<string, BundleDetails> m_Details;
 
-        public void GenerateUpdateList(SerializedAssetManifest serverManifest, ref List<string> scriptFilteredBundleList)
+
+        internal void GenerateUpdateList(SerializedAssetManifest serverManifest, ref List<string> scriptFilteredBundleList)
         {
             for (int i = 0; i < scriptFilteredBundleList.Count;)
             {
@@ -41,7 +43,7 @@ namespace YondaimeCDS {
 
         }
 
-        public void UpdateManifestData(SerializedAssetManifest serverManifest, ref List<string> scriptFilteredBundleList)
+        internal void UpdateManifestData(SerializedAssetManifest serverManifest, ref List<string> scriptFilteredBundleList)
         {
             pendingUpdates.AddRange(scriptFilteredBundleList);
             Dictionary<string, BundleDetails> updates = serverManifest.m_Details;
@@ -78,22 +80,25 @@ namespace YondaimeCDS {
 
         
 
-        public double GetBundleSize(string bundleName) 
+        internal double GetBundleSize(string bundleName) 
         {
             return m_Details[bundleName].BundleSize;
         }
 
-        public void MarkBundleDownloaded(string bundleName)
+        internal void MarkBundleDownloaded(string bundleName)
         {
             pendingUpdates.Remove(bundleName);
         }
 
-        public bool IsBundleDownloadPending(string bundleName)
+        internal bool IsBundleDownloadPending(string bundleName)
         {
             return pendingUpdates.Contains(bundleName);
         }
 
-#if UNITY_EDITOR
+
+        #if UNITY_EDITOR
+        public List<string> Keys { get { return m_Keys; } }
+
         public void SetBundleSizeOf(string bundleName,double bundleSize)
         {
             BundleDetails details = m_Details[bundleName];

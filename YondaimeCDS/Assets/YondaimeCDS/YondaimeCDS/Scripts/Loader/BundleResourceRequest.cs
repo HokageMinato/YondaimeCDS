@@ -4,10 +4,10 @@ using UnityEngine;
 
 namespace YondaimeCDS {
 
-	public class BundleResourceRequest
+	internal class BundleResourceRequest
 	{
 		
-		public async Task<AssetBundle> LoadAssetBundle(string assetName) 
+		internal async Task<AssetBundle> LoadAssetBundle(string assetName) 
 		{
 			AssetBundle bundle = await TryLoadFromPersistantStorage(assetName);
 			if (bundle == null)

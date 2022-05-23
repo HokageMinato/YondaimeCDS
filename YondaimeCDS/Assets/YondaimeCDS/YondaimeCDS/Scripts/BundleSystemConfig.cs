@@ -1,3 +1,4 @@
+using System;
 using System.IO;
 using UnityEngine;
 namespace YondaimeCDS
@@ -33,6 +34,15 @@ namespace YondaimeCDS
             STORAGE_PATH = GenerateStoragePath();
             REMOTE_URL = remoteURL;
             STREAM_PATH = Application.streamingAssetsPath ;
+        }
+
+        public void SetRemoteURL(string url) 
+        {
+            if (!Uri.IsWellFormedUriString(url, UriKind.Absolute))
+                throw new Exception("Invalid URL format");
+
+            remoteURL = url;
+            REMOTE_URL = url;
         }
     }
 

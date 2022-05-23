@@ -9,15 +9,12 @@ namespace YondaimeCDS
     public static class BundleSystem
     {
         #region PRIVATE_VARS
-
         private static BundleSystemConfig _config;
         private static bool _IS_INITIALZIED = false;
-
         #endregion
 
 
         #region INITIALZER
-
         public static void Initialize()
         {
             _config = IOUtils.LoadFromResourcesTextAsset<BundleSystemConfig>(Constants.SYSTEM_SETTINGS);
@@ -35,6 +32,15 @@ namespace YondaimeCDS
 
             return Downloader.CheckForContentUpdate();
         }
+
+        public static void SetRemoteURL(string url) 
+        {
+            if (!SystemInitializedCheck())
+                return;
+
+            _config.SetRemoteURL(url);
+
+        }
         #endregion
 
         #region LOAD_HANDLES
@@ -46,7 +52,7 @@ namespace YondaimeCDS
 
             if (IsCatelogSetToAutoUpdate())
             {
-                
+                await DownloadUpdatedBundle(bundleName);
             }
 
             T loadedAsset = await Loader.LoadAsset<T>(bundleName, assetName);
@@ -65,14 +71,14 @@ namespace YondaimeCDS
 
         #region DOWNLOAD_HANDLES
 
-        private static async Task DownloadUpdatedBundle(string bundleName)
+        private static async Task DownloadUpdatedBundle(string bundle)
         {
             IReadOnlyList<string> updates = await CheckForContentUpdate();
-            if (updates != null && IsToBeUpdated(bundleName))
-                await DownloadBundle(bundleName);
+            if (updates != null && IsUpdatePresentFor(bundle))
+                await DownloadBundle(bundle);
 
 
-            bool IsToBeUpdated(string bundleName)
+            bool IsUpdatePresentFor(string bundleName)
             {
                 for (int i = 0; i < updates.Count; i++)
                     if (updates[i] == bundleName)
@@ -87,6 +93,8 @@ namespace YondaimeCDS
         {
             if (!SystemInitializedCheck())
                 return null;
+
+
 
             return Downloader.DownloadBundle(bundleName, OnProgressChanged);
         }
@@ -118,8 +126,8 @@ namespace YondaimeCDS
 
         private static bool SystemInitializedCheck()
         {
-            if (!_IS_INITIALZIED)
-                Debug.LogError("Initialize System before performing any operations");
+            if (!_IS_INITIALZIED) 
+                throw new Exception("Initialize System before performing any operations");
 
             return _IS_INITIALZIED;
         }

@@ -4,23 +4,13 @@ using UnityEngine;
 
 namespace YondaimeCDS
 {
-    public static class Loader
+    internal static class Loader
     {
         private static Dictionary<string, AssetBundle> _LOADED_BUNDLES = new Dictionary<string, AssetBundle>();
         private static Dictionary<string, UnityEngine.Object> _LOADED_ASSETS = new Dictionary<string, UnityEngine.Object>();
 
 
-        #region PRIVATE_PROPERTIES
-
-        private static SerializedAssetManifest LocalAssetManifest
-        {
-            get { return ManifestTracker.LocalAssetManifest; }
-        }
-
-        #endregion
-
-
-        public static async Task<T> LoadAsset<T>(string bundleName, string assetName) where T : UnityEngine.Object
+        internal static async Task<T> LoadAsset<T>(string bundleName, string assetName) where T : UnityEngine.Object
         {
 
             if (IsBundleLoaded(bundleName))
@@ -34,7 +24,7 @@ namespace YondaimeCDS
 
                 Debug.Log("loading asset from cached bundle");
                 AssetBundle loadedBundle = _LOADED_BUNDLES[bundleName];
-                return LoadAssetFromBundle<T>(loadedBundle, bundleName, assetName);
+                return  LoadAssetFromBundle<T>(loadedBundle, bundleName, assetName);
             }
 
 
@@ -68,7 +58,7 @@ namespace YondaimeCDS
             return bundle;
         }
 
-        public static void UnloadBundle(string bundleName)
+        internal static void UnloadBundle(string bundleName)
         {
             if (!IsBundleLoaded(bundleName))
                 return;
