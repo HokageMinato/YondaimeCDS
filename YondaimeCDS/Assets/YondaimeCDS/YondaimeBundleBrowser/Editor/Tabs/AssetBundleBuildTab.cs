@@ -390,10 +390,12 @@ namespace AssetBundleBrowser
         private static void CopyToStreamingAssets(string sourceDirName, string destDirName,List<string> locallyIncludedFiles)
         {
             // If the destination directory doesn't exist, create it.
-            if (!Directory.Exists(destDirName))
+            if (Directory.Exists(destDirName))
             {
-                Directory.CreateDirectory(destDirName);
+                Directory.Delete(destDirName, true);
             }
+
+            Directory.CreateDirectory(destDirName);
 
             foreach (string folderPath in Directory.GetDirectories(sourceDirName, "*", SearchOption.AllDirectories))
             {
