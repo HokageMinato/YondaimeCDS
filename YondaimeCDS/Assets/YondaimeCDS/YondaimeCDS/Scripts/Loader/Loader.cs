@@ -10,89 +10,94 @@ namespace YondaimeCDS
         private static Dictionary<string, UnityEngine.Object> _LOADED_ASSETS = new Dictionary<string, UnityEngine.Object>();
 
 
-        internal static async Task<T> LoadAsset<T>(string bundleName, string assetName) where T : UnityEngine.Object
+        internal static async Task<T> LoadAsset<T>(AssetHandle loadHandle) where T : UnityEngine.Object
         {
+            T asset = TryLoadAssetFromAssetCache<T>(loadHandle);
+            if(asset != null)
+                return asset;
 
-            if (IsBundleLoaded(bundleName))
-            {
-                string key = GenerateAssetKey(bundleName, assetName);
-                if (IsAssetLoaded(key))
-                {
-                    Debug.Log("Returning cached asset");
-                    return (T)_LOADED_ASSETS[key];
-                }
+            asset = TryLoadAssetFromBundleCache<T>(loadHandle);
+            if (asset != null)
+                return asset;
 
-                Debug.Log("loading asset from cached bundle");
-                AssetBundle loadedBundle = _LOADED_BUNDLES[bundleName];
-                return  LoadAssetFromBundle<T>(loadedBundle, bundleName, assetName);
-            }
+            asset = await TryLoadAssetBundleFromDisk<T>(loadHandle);
+            
+            if (asset == null)
+                Debug.LogError("Invalid bundle/asset load request");
 
-
-            AssetBundle bundle = await LoadBundle<T>(bundleName);
-            if(bundle == null)
-                return null;
-
-            T loadedAsset = LoadAssetFromBundle<T>(bundle, bundleName, assetName);
-            return loadedAsset;
+            return asset;
         }
 
-        private static T LoadAssetFromBundle<T>(AssetBundle bundle, string bundleName, string assetName)
-            where T : UnityEngine.Object
+        internal static void UnloadBundle(AssetHandle loadHandle)
         {
-            T loadedAsset = bundle.LoadAsset<T>(assetName);
-            string key = GenerateAssetKey(bundleName, assetName);
+            if (!_LOADED_BUNDLES.ContainsKey(loadHandle.BundleName))
+                return;
+
+            AssetBundle bundle = _LOADED_BUNDLES[loadHandle.BundleName];
+            RemoveAllAssetReferencesOfBundle(loadHandle, bundle);
+            _LOADED_BUNDLES.Remove(loadHandle.BundleName);
+            bundle.Unload(true);
+        }
+
+        
+
+        private static T TryLoadAssetFromBundleCache<T>(AssetHandle loadHandle) where T: UnityEngine.Object
+        {
+            if (_LOADED_BUNDLES.ContainsKey(loadHandle.BundleName))
+            {
+                AssetBundle loadedBundle = _LOADED_BUNDLES[loadHandle.BundleName];
+                return LoadAssetFromBundle<T>(loadedBundle, loadHandle);
+            }
+            return default;
+        }
+
+        private static T LoadAssetFromBundle<T>(AssetBundle bundle, AssetHandle loadHandle) where T : UnityEngine.Object
+        {
+            T loadedAsset = bundle.LoadAsset<T>(loadHandle.AssetName);
+            if (loadedAsset == null)
+                return default;
+
+            string key = GenerateAssetKey(loadHandle);
             _LOADED_ASSETS.Add(key, loadedAsset);
             return loadedAsset;
         }
 
-        private static async Task<AssetBundle> LoadBundle<T>(string bundleName) where T : UnityEngine.Object
+        private static T TryLoadAssetFromAssetCache<T>(AssetHandle assetHandle) where T : UnityEngine.Object
         {
-            AssetBundle bundle = await new BundleResourceRequest().LoadAssetBundle(bundleName);
+            string key = GenerateAssetKey(assetHandle);
+            if (_LOADED_ASSETS.ContainsKey(key))
+                return (T)_LOADED_ASSETS[key];
+            
+            return default;
+        }
+
+
+        private static async Task<T> TryLoadAssetBundleFromDisk<T>(AssetHandle assetHandle) where T : UnityEngine.Object 
+        {
+            AssetBundle bundle = await new BundleResourceRequest().LoadAssetBundle(assetHandle);
+            
             if (bundle == null)
-            {
-                Debug.LogError($"Invalid bundle load request {bundle}");
-                return null;
-            }
-
-            _LOADED_BUNDLES.Add(bundleName, bundle);
-            return bundle;
+                return default;
+            
+            _LOADED_BUNDLES.Add(assetHandle.BundleName, bundle);
+            return LoadAssetFromBundle<T>(bundle, assetHandle);
         }
 
-        internal static void UnloadBundle(string bundleName)
-        {
-            if (!IsBundleLoaded(bundleName))
-                return;
 
-            AssetBundle bundle = _LOADED_BUNDLES[bundleName];
-            RemoveAllAssetReferencesOfBundle(bundleName, bundle);
-            _LOADED_BUNDLES.Remove(bundleName);
-            bundle.Unload(true);
-        }
-
-        private static bool IsBundleLoaded(string bundleName)
-        {
-            return _LOADED_BUNDLES.ContainsKey(bundleName);
-        }
-
-        private static bool IsAssetLoaded(string assetName)
-        {
-            return _LOADED_ASSETS.ContainsKey(assetName);
-        }
-
-        private static void RemoveAllAssetReferencesOfBundle(string bundleName, AssetBundle bundle)
+        private static void RemoveAllAssetReferencesOfBundle(AssetHandle loadHandle, AssetBundle bundle)
         {
             string[] assetNames = bundle.GetAllAssetNames();
             for (int i = 0; i < assetNames.Length; i++)
             {
-                string key = bundleName + assetNames[i];
+                string key = loadHandle.BundleName + assetNames[i];
                 if (_LOADED_ASSETS.ContainsKey(key))
                     _LOADED_ASSETS.Remove(key);
             }
         }
 
-        private static string GenerateAssetKey(string bundleName, string assetName)
+        private static string GenerateAssetKey(AssetHandle loadHandle)
         {
-            return bundleName + assetName;
+            return loadHandle.BundleName + loadHandle.AssetName;
         }
 
       

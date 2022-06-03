@@ -19,21 +19,11 @@ namespace YondaimeCDS
         {
             _config = IOUtils.LoadFromResourcesTextAsset<BundleSystemConfig>(Constants.SYSTEM_SETTINGS);
             ManifestTracker.Initialize(_config.serializedScriptManifest);
+            ContentTracker.Initialize(_config.autoUpdateCatelog);
             _IS_INITIALZIED = true;
         }
 
-        #endregion
-
-        #region CONTENT_TRACKING
-        public static Task<IReadOnlyList<string>> CheckForContentUpdate()
-        {
-            if (!SystemInitializedCheck())
-                return null;
-
-            return Downloader.CheckForContentUpdate();
-        }
-
-        public static void SetRemoteURL(string url) 
+        public static void SetRemoteURL(string url)
         {
             if (!SystemInitializedCheck())
                 return;
@@ -43,20 +33,63 @@ namespace YondaimeCDS
         }
         #endregion
 
-        #region LOAD_HANDLES
 
-        public static async Task<T> LoadAsset<T>(string bundleName, string assetName) where T : Object
+
+        #region CONTENT_TRACKING
+        public static Task<IReadOnlyList<string>> GetUpdates()
         {
             if (!SystemInitializedCheck())
                 return null;
 
-            if (IsCatelogSetToAutoUpdate())
+            return new ContentUpdateDetector().GetUpdates(); 
+        }
+
+        public static Task<IReadOnlyList<string>> GetAssetList() 
+        {
+            if (!SystemInitializedCheck())
+                return null;
+
+            return ContentTracker.GetAssetList();
+        }
+
+        public static Task<bool> IsValidAddress(string bundleName) 
+        {
+            if (!SystemInitializedCheck())
+                return null;
+
+            return ContentTracker.IsValidAddress(bundleName);
+        }
+        #endregion
+
+
+
+        #region LOAD_HANDLES
+        public static async Task<T> LoadAsset<T>(string bundleName, string assetName,Action<float> onLoadProgressChanged = null) where T : Object
+        {
+            if (!SystemInitializedCheck())
+                return null;
+
+            float partialProg = 0;
+            Action<float> loadOperationProgress = onLoadProgressChanged;
+            if (IsCatelogSetToAutoUpdate()) 
             {
-                await DownloadUpdatedBundle(bundleName);
+                await Downloader.DownloadBundle(new AssetHandle(bundleName, SetPartialDownloadProgress));
+                loadOperationProgress = SetPartialLoadProgress;
             }
 
-            T loadedAsset = await Loader.LoadAsset<T>(bundleName, assetName);
+            T loadedAsset = await Loader.LoadAsset<T>(new AssetHandle(bundleName,assetName,loadOperationProgress));
             return loadedAsset;
+
+            void SetPartialDownloadProgress(float downProg)
+            {
+                partialProg = (IOUtils.Remap(downProg, 0, 1, 0, 0.5f));
+                onLoadProgressChanged(partialProg);
+            }
+            void SetPartialLoadProgress(float loadProg)
+            {
+                partialProg += IOUtils.Remap(loadProg, 0, 1, 0.5f, 1.0f);
+                onLoadProgressChanged(partialProg);
+            }
         }
 
         public static void UnloadBundle(string bundleName)
@@ -64,62 +97,31 @@ namespace YondaimeCDS
             if (!SystemInitializedCheck())
                 return;
 
-            Loader.UnloadBundle(bundleName);
+           AssetHandle unloadHandle = new AssetHandle(bundleName);
+           Loader.UnloadBundle(unloadHandle);
         }
 
         #endregion
 
         #region DOWNLOAD_HANDLES
 
-        private static async Task DownloadUpdatedBundle(string bundle)
-        {
-            IReadOnlyList<string> updates = await CheckForContentUpdate();
-            if (updates != null && IsUpdatePresentFor(bundle))
-                await DownloadBundle(bundle);
-
-
-            bool IsUpdatePresentFor(string bundleName)
-            {
-                for (int i = 0; i < updates.Count; i++)
-                    if (updates[i] == bundleName)
-                        return true;
-
-                return false;
-            }
-        }
-
-
-        public static Task DownloadBundle(string bundleName, Action<float> OnProgressChanged=null)
+        public static Task<bool> DownloadBundle(string bundleName, Action<float> OnProgressChanged=null)
         {
             if (!SystemInitializedCheck())
                 return null;
 
-
-
-            return Downloader.DownloadBundle(bundleName, OnProgressChanged);
+            AssetHandle downloadHandle = new AssetHandle(bundleName,OnProgressChanged);
+            return Downloader.DownloadBundle(downloadHandle);
         }
 
-       
-
-        public static double GetPendingDownloadSize(string assetName,SizeUnit sizeUnit = SizeUnit.Byte)
+        public static Task<bool> IsDownloaded(string bundleName)
         {
             if (!SystemInitializedCheck())
-                return -1;
+                return null;
 
-            switch (sizeUnit)
-            {
-                case SizeUnit.MB:
-                    return DownloadedDataTracker.GetPendingDownloadSizeInMB(assetName);
-                    
-                case SizeUnit.KB:
-                    return DownloadedDataTracker.GetPendingDownloadSizeInKB(assetName);
-                    
-                default:
-                    return DownloadedDataTracker.RequestBundleSize(assetName);
-            }
+            return ContentTracker.IsBundleDownloaded(bundleName);
 
         }
-
         #endregion
 
         #region SYSTEM_CHECKS
@@ -143,13 +145,6 @@ namespace YondaimeCDS
         }
         #endregion
 
-        #region INTERNAL_DECLARATIONS
-        public enum SizeUnit
-        {
-            Byte,
-            MB,
-            KB
-        }
-        #endregion
+       
     }
 }

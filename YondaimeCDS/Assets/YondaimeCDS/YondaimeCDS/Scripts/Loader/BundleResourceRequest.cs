@@ -1,3 +1,4 @@
+using System;
 using System.IO;
 using System.Threading.Tasks;
 using UnityEngine;
@@ -6,26 +7,27 @@ namespace YondaimeCDS {
 
 	internal class BundleResourceRequest
 	{
-		
-		internal async Task<AssetBundle> LoadAssetBundle(string assetName) 
+		private AssetHandle _loadHandle;
+
+		internal async Task<AssetBundle> LoadAssetBundle(AssetHandle loadHandle) 
 		{
-			AssetBundle bundle = await TryLoadFromPersistantStorage(assetName);
+			_loadHandle = loadHandle;
+
+			AssetBundle bundle = await TryLoadFromPersistantStorage();
 			if (bundle == null)
-				bundle = await TryLoadFromStreamedStorage(assetName);
+				bundle = await TryLoadFromStreamedStorage();
 
 			return bundle;
 		}
 
-		private async Task<AssetBundle> TryLoadFromPersistantStorage(string bundleName) 
+		private async Task<AssetBundle> TryLoadFromPersistantStorage() 
 		{
-			string persistantStoragePath = Path.Combine(BundleSystemConfig.STORAGE_PATH, bundleName);
-			return await LoadBundleFromPath(persistantStoragePath);
+			return await LoadBundleFromPath(Path.Combine(BundleSystemConfig.STORAGE_PATH, _loadHandle.BundleName));
 		}
 		
-		private async Task<AssetBundle> TryLoadFromStreamedStorage(string bundleName) 
+		private async Task<AssetBundle> TryLoadFromStreamedStorage() 
 		{
-			string streamedStoragePath = Path.Combine(BundleSystemConfig.STREAM_PATH, bundleName);
-			return await LoadBundleFromPath(streamedStoragePath);
+			return await LoadBundleFromPath(Path.Combine(BundleSystemConfig.STREAM_PATH, _loadHandle.BundleName));
 		}
 
 		private async Task<AssetBundle> LoadBundleFromPath(string path) 
@@ -35,8 +37,12 @@ namespace YondaimeCDS {
 			if(bundleCreationRequest == null)
 				return null;
 
+
 			while (!bundleCreationRequest.isDone)
+			{
+				_loadHandle.OnOperationProgressChanged(bundleCreationRequest.progress);
 				await Task.Yield();
+			}
 
 			return bundleCreationRequest.assetBundle;
 		}

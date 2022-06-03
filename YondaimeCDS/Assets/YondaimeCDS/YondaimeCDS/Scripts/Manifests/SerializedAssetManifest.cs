@@ -20,6 +20,7 @@ namespace YondaimeCDS {
 
         internal IReadOnlyList<string> PendingUpdates { get { return pendingUpdates; } }
        
+        internal IReadOnlyList<string> BundleNames { get { return m_Keys; } }
 
         private Dictionary<string, BundleDetails> m_Details;
 

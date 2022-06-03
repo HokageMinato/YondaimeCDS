@@ -6,21 +6,21 @@ using UnityEngine.Networking;
 
 namespace YondaimeCDS 
 {
-
     internal class BundleDownloadHandle
     {
-        private Action<float> _onProgressChanged;
 
-        internal async Task<bool> DownloadBundle(string bundleName, Action<float> onProgressChanged = null)
+        private AssetHandle _assetHandle;
+
+        internal async Task<bool> DownloadBundle(AssetHandle assetHandle)
         {
-            _onProgressChanged = onProgressChanged;
             
+            _assetHandle = assetHandle;
+            string bundleName = assetHandle.BundleName;
             string absoluteUrl = Path.Combine(BundleSystemConfig.REMOTE_URL, bundleName);
             string absoluteSavePath = Path.Combine(BundleSystemConfig.STORAGE_PATH, bundleName);
-
             bool downloadSuccess = await DownloadBundleContent(absoluteUrl,absoluteSavePath);
             
-            _onProgressChanged = null;
+            _assetHandle = null;
             return downloadSuccess;
         }
 
@@ -60,15 +60,12 @@ namespace YondaimeCDS
 
                 while (!downloadRequest.isDone)
                 {
-                    _onProgressChanged?.Invoke(downloadRequest.downloadProgress);
+                    _assetHandle.OnOperationProgressChanged?.Invoke(downloadRequest.downloadProgress);
                     await Task.Yield();
                 }
 
-
                 if (downloadRequest.result == UnityWebRequest.Result.Success)
                     return true;
-
-                Debug.Log(downloadRequest.error);
 
                 return false;
             }
@@ -76,6 +73,9 @@ namespace YondaimeCDS
            
 
         }
+
+
+
     }
 }
 

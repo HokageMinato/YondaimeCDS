@@ -7,7 +7,22 @@ namespace YondaimeCDS {
 
     public class IOUtils
     {
-        
+
+        public static float Remap(float value, float fromMin, float fromMax, float toMin, float toMax)
+        {
+            float fromAbs = value - fromMin;
+            float fromMaxAbs = fromMax - fromMin;
+
+            float normal = fromAbs / fromMaxAbs;
+
+            float toMaxAbs = toMax - toMin;
+            float toAbs = toMaxAbs * normal;
+
+            float to = toAbs + toMin;
+
+            return to;
+        }
+
         public static T Deserialize<T>(string json)
         {
             return JsonUtility.FromJson<T>(json);

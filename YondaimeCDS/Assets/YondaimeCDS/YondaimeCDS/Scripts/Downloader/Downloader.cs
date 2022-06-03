@@ -20,32 +20,32 @@ namespace YondaimeCDS
         #endregion
 
 
-        internal static async Task<IReadOnlyList<string>> CheckForContentUpdate()
-        {
-            return await new ContentUpdateDetector().GetUpdates();
-        }
+        
 
-        internal static async Task DownloadBundle(string assetName, Action<float> onProgressChanged = null)
+        internal static async Task<bool> DownloadBundle(AssetHandle downloadHandle)
         {
-            if (IsDownloadAlreadyInProgress(assetName))
+
+            if (IsDownloadAlreadyInProgress(downloadHandle))
             {
-                Debug.Log($"Download Task for {assetName} already in progress, ending thread");
-                return;
+                Debug.Log($"Download Task for {downloadHandle.BundleName} already in progress, ending thread");
+                return false;
             }
            
-            if (!IsValidDownloadRequest(assetName))
+            if (!IsValidDownloadRequest(downloadHandle))
             {
                 Debug.Log("Bundle already Downloaded or Invalid key");
-                return;
+                return false;
             }
 
-            _activeDownloads.Add(assetName);
-            bool downloadSuccess = await new BundleDownloadHandle().DownloadBundle(assetName, onProgressChanged);
-            MarkBundleDownloaded(assetName, downloadSuccess);
+            _activeDownloads.Add(downloadHandle.BundleName);
+            bool downloadSuccess = await new BundleDownloadHandle().DownloadBundle(downloadHandle);
+            MarkBundleDownloaded(downloadHandle, downloadSuccess);
+            return downloadSuccess;
         }
 
-        private static void MarkBundleDownloaded(string assetName, bool downloadSuccess)
+        private static void MarkBundleDownloaded(AssetHandle downloadHandle, bool downloadSuccess)
         {
+            string assetName = downloadHandle.BundleName;
             _activeDownloads.Remove(assetName);
             if (downloadSuccess)
                 UpdateLocalManifest(assetName);
@@ -58,14 +58,14 @@ namespace YondaimeCDS
             ManifestTracker.UpdateAssetManifestDiskContents();
         }
 
-        private static bool IsValidDownloadRequest(string bundleName)
+        private static bool IsValidDownloadRequest(AssetHandle downloadHandle)
         {
-            return LocalAssetManifest.IsBundleDownloadPending(bundleName);
+            return LocalAssetManifest.IsBundleDownloadPending(downloadHandle.BundleName);
         }
 
-        private static bool IsDownloadAlreadyInProgress(string bundleName) 
+        private static bool IsDownloadAlreadyInProgress(AssetHandle downloadHandle)
         {
-            return _activeDownloads.Contains(bundleName);
+            return _activeDownloads.Contains(downloadHandle.BundleName);
         }
     }
 }
