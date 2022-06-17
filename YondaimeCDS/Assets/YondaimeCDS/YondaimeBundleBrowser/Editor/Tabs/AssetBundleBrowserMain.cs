@@ -57,7 +57,7 @@ namespace AssetBundleBrowser
         static void ShowWindow()
         {
             s_instance = null;
-            instance.titleContent = new GUIContent("AssetBundles");
+            instance.titleContent = new GUIContent("BundleBrowser");
             instance.Show();
         }
 

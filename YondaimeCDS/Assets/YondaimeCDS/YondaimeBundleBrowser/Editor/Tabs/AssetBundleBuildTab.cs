@@ -6,6 +6,7 @@ using System.Runtime.Serialization.Formatters.Binary;
 
 using AssetBundleBrowser.AssetBundleDataSource;
 using UnityEditor.IMGUI.Controls;
+using YondaimeCDS;
 
 namespace AssetBundleBrowser
 {
@@ -298,7 +299,7 @@ namespace AssetBundleBrowser
             EditorGUILayout.Space();
             EditorGUILayout.Space();
             EditorGUILayout.Space();
-            EditorGUILayout.LabelField(new GUIContent("Is Bundle Locally Available:"),centeredStyle);
+            EditorGUILayout.LabelField(new GUIContent("Is Bundle Locally Available:"));
             DrawLocalAssetTable();
               
             
@@ -379,6 +380,7 @@ namespace AssetBundleBrowser
                 m_InspectTab.AddBundleFolder(buildInfo.outputDirectory);
                 m_InspectTab.RefreshBundles();
             };
+            buildInfo.localBundles = new List<string>(m_UserData.m_localBundles);
 
             AssetBundleModel.Model.DataSource.BuildAssetBundles (buildInfo);
 
@@ -414,6 +416,9 @@ namespace AssetBundleBrowser
                     File.Copy(filePath, newFilePath, true);
                 }
             }
+
+
+            
         }
 
         private void BrowseForFolder()

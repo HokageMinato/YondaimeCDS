@@ -53,7 +53,7 @@ namespace AssetBundleBrowser
             file.Close();
 
 
-            BundleSystemConfig config = IOUtils.LoadFromResourcesTextAsset<BundleSystemConfig>(Constants.SYSTEM_SETTINGS);
+            BundleSystemConfig config = Utils.LoadFromResourcesTextAsset<BundleSystemConfig>(Constants.SYSTEM_SETTINGS);
             config.remoteURL = m_UserData.remoteURL;
             config.autoUpdateCatelog = m_UserData.autoUpdateCatelog;
             ManifestGenerator.WriteConfigToResources(config);

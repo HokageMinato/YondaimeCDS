@@ -6,132 +6,177 @@ using Object = UnityEngine.Object;
 
 namespace YondaimeCDS
 {
+   
     public static class BundleSystem
     {
         #region PRIVATE_VARS
         private static BundleSystemConfig _config;
-        private static bool _IS_INITIALZIED = false;
+        private static bool _IS_INITIALIZED;
+        private static bool _initializationStarted = false;
         #endregion
 
 
         #region INITIALZER
-        public static void Initialize()
+
+        public static async Task Initialize()
         {
-            _config = IOUtils.LoadFromResourcesTextAsset<BundleSystemConfig>(Constants.SYSTEM_SETTINGS);
-            ManifestTracker.Initialize(_config.serializedScriptManifest);
-            ContentTracker.Initialize(_config.autoUpdateCatelog);
-            _IS_INITIALZIED = true;
+            if (_IS_INITIALIZED || _initializationStarted)
+            {
+                Debug.LogError("Either System Initialied or in progress,suspending request thread");
+                return;
+            }
+
+            _initializationStarted = true;
+            LoadSystemConfig();
+            await InitializeManifestTracker();
+            _IS_INITIALIZED = true;
         }
 
-        public static void SetRemoteURL(string url)
+        private static void LoadSystemConfig()
         {
-            if (!SystemInitializedCheck())
-                return;
+            _config = Utils.LoadFromResourcesTextAsset<BundleSystemConfig>(Constants.SYSTEM_SETTINGS);
+            Debug.Log(_config.remoteURL + "iro");
+        }
 
+        private static async Task InitializeManifestTracker()
+        {
+            ManifestTracker.Initialize(_config);
+            if (ManifestTracker.LocalAssetManifest == null)
+                await ContentTracker.CheckForUpdates();
+        }
+
+        public static async Task SetRemoteURL(string url)
+        {
+            await SystemInitWait();
+            ValidURLCheck(url);
             _config.SetRemoteURL(url);
-
         }
         #endregion
 
 
 
         #region CONTENT_TRACKING
-        public static Task<IReadOnlyList<string>> GetUpdates()
+        public static async Task<IReadOnlyList<string>> CheckForContentUpdates()
         {
-            if (!SystemInitializedCheck())
-                return null;
-
-            return new ContentUpdateDetector().GetUpdates(); 
+            await SystemInitWait();
+            return await ContentTracker.CheckForUpdates();
         }
 
-        public static Task<IReadOnlyList<string>> GetAssetList() 
-        {
-            if (!SystemInitializedCheck())
-                return null;
+        
 
-            return ContentTracker.GetAssetList();
+        public static async Task<bool> IsValidAddress(string bundleName)
+        {
+            await SystemInitWait();
+            AssetHandle assetHandle = new AssetHandle(bundleName);
+            return ContentTracker.IsValidAddress(assetHandle);
         }
 
-        public static Task<bool> IsValidAddress(string bundleName) 
+        public static async Task<double> GetAssetSize(string bundleName) 
         {
-            if (!SystemInitializedCheck())
-                return null;
+            await SystemInitWait();
+            AssetHandle assetHandle = new AssetHandle(bundleName);
+            if (!ContentTracker.IsValidAddress(assetHandle))
+            {
+                InValidAddressException(bundleName);
+                return -1;
+            }
 
-            return ContentTracker.IsValidAddress(bundleName);
+            return ContentTracker.GetAssetSize(assetHandle);
         }
         #endregion
 
 
 
         #region LOAD_HANDLES
-        public static async Task<T> LoadAsset<T>(string bundleName, string assetName,Action<float> onLoadProgressChanged = null) where T : Object
+        public static async Task<T> LoadAsset<T>(string bundleName, string assetName, Action<float> onLoadProgressChanged = null) where T : Object
         {
-            if (!SystemInitializedCheck())
+            AssetHandle loadHandle = new AssetHandle(bundleName,assetName,onLoadProgressChanged);
+            
+            if (!ContentTracker.IsValidAddress(loadHandle))
+            {
+                InValidAddressException(bundleName);
                 return null;
-
-            float partialProg = 0;
-            Action<float> loadOperationProgress = onLoadProgressChanged;
-            if (IsCatelogSetToAutoUpdate()) 
-            {
-                await Downloader.DownloadBundle(new AssetHandle(bundleName, SetPartialDownloadProgress));
-                loadOperationProgress = SetPartialLoadProgress;
             }
 
-            T loadedAsset = await Loader.LoadAsset<T>(new AssetHandle(bundleName,assetName,loadOperationProgress));
-            return loadedAsset;
+            bool isAssetToBeDownloaded = !await ContentTracker.IsAssetDownloaded(loadHandle) && 
+                                                !ContentTracker.IsBundleAvailableInBuild(loadHandle) &&
+                                                _config.autoUpdateCatelog; 
+                                          
+            if (isAssetToBeDownloaded)
+                await Downloader.DownloadBundle(loadHandle);
 
-            void SetPartialDownloadProgress(float downProg)
-            {
-                partialProg = (IOUtils.Remap(downProg, 0, 1, 0, 0.5f));
-                onLoadProgressChanged(partialProg);
-            }
-            void SetPartialLoadProgress(float loadProg)
-            {
-                partialProg += IOUtils.Remap(loadProg, 0, 1, 0.5f, 1.0f);
-                onLoadProgressChanged(partialProg);
-            }
+            return await Loader.LoadAsset<T>(loadHandle);
         }
 
-        public static void UnloadBundle(string bundleName)
+        public static async Task UnloadBundle(string bundleName)
         {
-            if (!SystemInitializedCheck())
-                return;
+            await SystemInitWait();
+            
+            AssetHandle unloadHandle = new AssetHandle(bundleName);
 
-           AssetHandle unloadHandle = new AssetHandle(bundleName);
-           Loader.UnloadBundle(unloadHandle);
+            if (!ContentTracker.IsValidAddress(unloadHandle))
+            {
+                InValidAddressException(bundleName);
+                return;
+            }
+
+            Loader.UnloadBundle(unloadHandle);
         }
 
         #endregion
 
         #region DOWNLOAD_HANDLES
 
-        public static Task<bool> DownloadBundle(string bundleName, Action<float> OnProgressChanged=null)
+        public static async Task<bool> DownloadBundle(string bundleName, Action<float> OnProgressChanged = null)
         {
-            if (!SystemInitializedCheck())
-                return null;
+            await SystemInitWait();
 
-            AssetHandle downloadHandle = new AssetHandle(bundleName,OnProgressChanged);
-            return Downloader.DownloadBundle(downloadHandle);
+            AssetHandle downloadHandle = new AssetHandle(bundleName, OnProgressChanged);
+            
+            if (!ContentTracker.IsValidAddress(downloadHandle))
+            {
+                InValidAddressException(bundleName);
+                return false;
+            }
+
+            return await Downloader.DownloadBundle(downloadHandle);
         }
 
-        public static Task<bool> IsDownloaded(string bundleName)
+        public static async Task<bool> IsDownloaded(string bundleName)
         {
-            if (!SystemInitializedCheck())
-                return null;
+            await SystemInitWait();
+            AssetHandle downloadCheckHandle = new AssetHandle(bundleName);
+            if (!ContentTracker.IsValidAddress(downloadCheckHandle))
+            {
+                InValidAddressException(bundleName);
+                return false;
+            }
 
-            return ContentTracker.IsBundleDownloaded(bundleName);
-
+            return await ContentTracker.IsAssetDownloaded(downloadCheckHandle);
         }
         #endregion
 
+
         #region SYSTEM_CHECKS
-
-        private static bool SystemInitializedCheck()
+        
+        private static void  InValidAddressException(string bundleName)
         {
-            if (!_IS_INITIALZIED) 
-                throw new Exception("Initialize System before performing any operations");
+            throw new Exception($"Invalid BundleKey Request {bundleName}");
+        }
 
-            return _IS_INITIALZIED;
+        private static void ValidURLCheck(string url) 
+        {
+            if (!Uri.IsWellFormedUriString(url, UriKind.Absolute))
+                throw new Exception("Invalid URL format");
+
+        }
+
+        private static async Task SystemInitWait() 
+        {
+            while (!_IS_INITIALIZED) 
+            {
+                await Task.Yield();
+            }
         }
 
         private static bool IsCatelogSetToAutoUpdate() 

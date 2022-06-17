@@ -11,29 +11,19 @@ namespace YondaimeCDS
         private static HashSet<string> _activeDownloads = new HashSet<string>();
         #endregion
 
-        #region PRIVATE_PROPERTIES
-        private static SerializedAssetManifest LocalAssetManifest
-        {
-            get { return ManifestTracker.LocalAssetManifest; }
-        }
-
-        #endregion
-
-
-        
-
+       
         internal static async Task<bool> DownloadBundle(AssetHandle downloadHandle)
         {
 
-            if (IsDownloadAlreadyInProgress(downloadHandle))
-            {
-                Debug.Log($"Download Task for {downloadHandle.BundleName} already in progress, ending thread");
-                return false;
+            while (IsDownloadAlreadyInProgress(downloadHandle))
+            { 
+                await Task.Yield();
+                return await IsBundleAlreadyDownloaded(downloadHandle);
             }
            
-            if (!IsValidDownloadRequest(downloadHandle))
+            if (await IsBundleAlreadyDownloaded(downloadHandle))
             {
-                Debug.Log("Bundle already Downloaded or Invalid key");
+                Debug.Log($"Latest Bundle Available");
                 return false;
             }
 
@@ -47,23 +37,15 @@ namespace YondaimeCDS
         {
             string assetName = downloadHandle.BundleName;
             _activeDownloads.Remove(assetName);
-            if (downloadSuccess)
-                UpdateLocalManifest(assetName);
         }
 
-        
-        private static void UpdateLocalManifest(string bundleName)
+       
+        private async static Task<bool> IsBundleAlreadyDownloaded(AssetHandle downloadHandle)
         {
-            LocalAssetManifest.MarkBundleDownloaded(bundleName);
-            ManifestTracker.UpdateAssetManifestDiskContents();
+            return await ContentTracker.IsAssetDownloaded(downloadHandle);
         }
 
-        private static bool IsValidDownloadRequest(AssetHandle downloadHandle)
-        {
-            return LocalAssetManifest.IsBundleDownloadPending(downloadHandle.BundleName);
-        }
-
-        private static bool IsDownloadAlreadyInProgress(AssetHandle downloadHandle)
+        public static bool IsDownloadAlreadyInProgress(AssetHandle downloadHandle)
         {
             return _activeDownloads.Contains(downloadHandle.BundleName);
         }

@@ -7,11 +7,13 @@ namespace YondaimeCDS {
     [Serializable]
     public class ScriptManifest: ISerializationCallbackReceiver
     {
+
         [SerializeField] private BundleScriptHashTuple[] bundleWiseScriptHashes;
         [SerializeField] private List<string> allScriptHashList = new List<string>();
         
         private HashSet<string> allScriptHashes = new HashSet<string>();
-
+        
+        
 
       
         internal ScriptManifest()
@@ -31,6 +33,16 @@ namespace YondaimeCDS {
             }
 
             return compatibleBundles;
+        }
+
+        internal IReadOnlyList<string> GetAllBundleNames()
+        {
+            int contentLength = bundleWiseScriptHashes.Length;
+            List<string> bundleNames = new List<string>(contentLength);
+            for (int i = 0; i < contentLength; i++)
+                bundleNames.Add(bundleWiseScriptHashes[i].BundleName);
+
+            return bundleNames;
         }
 
 

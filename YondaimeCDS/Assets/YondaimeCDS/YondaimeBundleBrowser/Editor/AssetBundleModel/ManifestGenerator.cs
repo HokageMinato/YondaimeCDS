@@ -11,11 +11,13 @@ namespace YondaimeCDS
     public class ManifestGenerator
     {
 
-        public static void GenerateManifests(CompatibilityAssetBundleManifest buildManifest, string outputDirectory)
+        public static void GenerateManifests(CompatibilityAssetBundleManifest buildManifest, string outputDirectory,List<string> localBundles)
         {
-            SerializedAssetManifest scriptManifest = GenenrateAssetManifestFrom(buildManifest, outputDirectory);
-            GenerateManifestHashFromContentsOf(scriptManifest, outputDirectory);
-            GenerateScriptManifest(outputDirectory);
+            SerializedAssetManifest assetManifest = GenenrateAssetManifestFrom(buildManifest, outputDirectory,localBundles);
+            GenerateManifestHashFromContentsOf(assetManifest, outputDirectory);
+            string serializedScriptManifest = GenerateScriptManifest(outputDirectory);
+            string serializedAssetManifest = Utils.Serialize(assetManifest);
+            WriteConfigToResources(GenerateBundleSystemConfigData(serializedScriptManifest,serializedAssetManifest));
             DeleteExtraFilesAt(outputDirectory);
             AssetDatabase.Refresh();
             AssetDatabase.SaveAssets();
@@ -28,26 +30,27 @@ namespace YondaimeCDS
                 Directory.CreateDirectory(directory);
 
             string path = Path.Combine(directory, $"{Constants.SYSTEM_SETTINGS}.txt");
-            File.WriteAllText(path, IOUtils.Serialize(config));
+            File.WriteAllText(path, Utils.Serialize(config));
         }
 
 
         private static void GenerateManifestHashFromContentsOf(SerializedAssetManifest compatibilityAssetBundleManifest, string outputDirectory)
         {
-            string manifestHash = ComputeHash(IOUtils.StringToBytes(IOUtils.Serialize(compatibilityAssetBundleManifest)));
+            string manifestHash = ComputeHash(Utils.StringToBytes(Utils.Serialize(compatibilityAssetBundleManifest)));
             HashManifest hashManifest = new HashManifest();
             hashManifest.AssetHash = manifestHash;
-            string serializedHashManifest = IOUtils.Serialize(hashManifest);
-            byte[] hashManifestData = IOUtils.StringToBytes(serializedHashManifest);
+            string serializedHashManifest = Utils.Serialize(hashManifest);
+            byte[] hashManifestData = Utils.StringToBytes(serializedHashManifest);
             File.WriteAllBytes(Path.Combine(outputDirectory, Constants.MANIFEST_HASH), hashManifestData);
         }
 
-        private static SerializedAssetManifest GenenrateAssetManifestFrom(CompatibilityAssetBundleManifest compatibilityBuildManifest, string outputDirectory)
+        private static SerializedAssetManifest GenenrateAssetManifestFrom(CompatibilityAssetBundleManifest compatibilityBuildManifest, string outputDirectory,List<string> localBundles)
         {
-            SerializedAssetManifest manifest = IOUtils.Deserialize<SerializedAssetManifest>(IOUtils.Serialize(compatibilityBuildManifest));
+            SerializedAssetManifest manifest = Utils.Deserialize<SerializedAssetManifest>(Utils.Serialize(compatibilityBuildManifest));
+            manifest.SetLocalBundleList(localBundles);
             CalculateSizesOfBundle(manifest, outputDirectory);
-            string serializedBundleManifest = IOUtils.Serialize(manifest);
-            byte[] manifestData = IOUtils.StringToBytes(serializedBundleManifest);
+            string serializedBundleManifest = Utils.Serialize(manifest);
+            byte[] manifestData = Utils.StringToBytes(serializedBundleManifest);
             File.WriteAllBytes(Path.Combine(outputDirectory, Constants.ASSET_MANIFEST), manifestData);
             return manifest;
         }
@@ -65,13 +68,13 @@ namespace YondaimeCDS
             
         }
 
-        private static void GenerateScriptManifest(string outputDirectory)
+        private static string GenerateScriptManifest(string outputDirectory)
         {
             ScriptManifest scriptManifest = GetScriptManifest();
-            string serializedScriptManifest = IOUtils.Serialize(scriptManifest);
-            byte[] scriptManifestData = IOUtils.StringToBytes(serializedScriptManifest);
+            string serializedScriptManifest = Utils.Serialize(scriptManifest);
+            byte[] scriptManifestData = Utils.StringToBytes(serializedScriptManifest);
             File.WriteAllBytes(Path.Combine(outputDirectory, Constants.SCRIPT_MANIFEST), scriptManifestData);
-            WriteConfigToResources(GenerateBundleSystemConfigData(serializedScriptManifest));
+            return serializedScriptManifest;
         }
 
         private static void DeleteExtraFilesAt(string outputDirectory)
@@ -80,9 +83,12 @@ namespace YondaimeCDS
             File.Delete(Path.Combine(outputDirectory, "buildlogtep.json"));
         }
 
-        private static BundleSystemConfig GenerateBundleSystemConfigData(string serializedScriptManifest) 
+        private static BundleSystemConfig GenerateBundleSystemConfigData(string serializedScriptManifest, string serializedAssetManifest) 
         {
-            return new BundleSystemConfig() { serializedScriptManifest = serializedScriptManifest };
+            return new BundleSystemConfig() { 
+                serializedScriptManifest = serializedScriptManifest,
+                //defaultSerializedAssetManifest = serializedAssetManifest
+            };
         }
 
         private static ScriptManifest GetScriptManifest()
@@ -132,7 +138,7 @@ namespace YondaimeCDS
 
             foreach (string scriptDependency in scriptDependencies)
             {
-                scriptHashes.Add(ComputeHash(IOUtils.StringToBytes(GetContentOfScript(scriptDependency))));
+                scriptHashes.Add(ComputeHash(Utils.StringToBytes(GetContentOfScript(scriptDependency))));
             }
 
             return scriptHashes;
@@ -149,7 +155,7 @@ namespace YondaimeCDS
 
         private static string ComputeHash(byte[] data)
         {
-            string hash = BitConverter.ToString(IOUtils.ToMD5(data));
+            string hash = BitConverter.ToString(Utils.ToMD5(data));
             return hash.Replace("-", string.Empty);
         }
 

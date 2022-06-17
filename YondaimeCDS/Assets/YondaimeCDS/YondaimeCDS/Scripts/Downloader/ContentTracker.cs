@@ -1,4 +1,3 @@
-using System.Collections;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using UnityEngine;
@@ -8,96 +7,73 @@ namespace YondaimeCDS
     public static class ContentTracker
     {
         #region PRIVATE_VARS
-        private static bool _autoUpdateCatelog = true;
-        private static HashSet<string> _activeTrackRequests = new HashSet<string>();
-        private static HashSet<string> _activeAssetRequests = new HashSet<string>();
         private static bool _requestActive = false;
-        private static bool _assetFetchActive = false;
+        #endregion
+
+        #region PRIVATE_PROPERTIES
+        private static SerializedAssetManifest AssetManifest { get { return ManifestTracker.LocalAssetManifest; } }
+        private static ScriptManifest ScriptManifest { get { return ManifestTracker.LocalScriptManifest; } }
+        public static IReadOnlyList<string> ServerAssetList { get; private set; }
         #endregion
 
 
-        internal static void Initialize(bool autoUpdateCatelog) 
-        { 
-            _autoUpdateCatelog = autoUpdateCatelog;
-        }
-
-        internal static async Task<IReadOnlyList<string>> CheckForUpdates() 
+        internal static async Task<IReadOnlyList<string>> CheckForUpdates()
         {
-            if (_requestActive)
+            bool wasAwaitingForResult = _requestActive;
+            while (_requestActive)
             {
-                Debug.LogError("Another thread already active, Suspending this");
-                return null;
+             
+                await Task.Yield();
+            }
+
+            if (wasAwaitingForResult)
+            {
+                Debug.LogError("UpdateRequestAlreadyActive, joining other thread result");
+                return ServerAssetList;
             }
 
             _requestActive = true;
-            IReadOnlyList<string> updates = await new ContentUpdateDetector().GetUpdates();
-            _requestActive = false;
-            return updates;
-        }
-
-        internal static async Task<IReadOnlyList<string>> GetAssetList() 
-        {
-            if (!_autoUpdateCatelog)
-                return ManifestTracker.LocalAssetManifest.BundleNames;
-
-             if (_assetFetchActive) 
-             {
-                Debug.LogError("Another Asset request already in process, Suspending this request");
-                return null;   
-             }
-
-            _assetFetchActive=true;
-            await CheckForUpdates();
-            IReadOnlyList<string> AssetList = ManifestTracker.LocalAssetManifest.BundleNames;
-            _assetFetchActive = false;
-            return AssetList;
-        }
-
-        internal static async Task<bool> IsBundleDownloaded(string bundleName) 
-        {
-            if (!_autoUpdateCatelog)
-                return Contains(bundleName,ManifestTracker.LocalAssetManifest.PendingUpdates);
-
-            if (_activeTrackRequests.Contains(bundleName))
-            {
-                Debug.LogError("Another Asset request already in process, Suspending this request");
-                return false;
-            }
-
-            _activeTrackRequests.Add(bundleName);
-            IReadOnlyList<string> updates = await CheckForUpdates();
-            bool isDownloaded = !Contains(bundleName,updates);
-            _activeTrackRequests.Remove(bundleName);
-            return isDownloaded;
-        }
-
-        internal static async Task<bool> IsValidAddress(string bundleName) 
-        {
-            if (!_autoUpdateCatelog)
-                return Contains(bundleName, ManifestTracker.LocalAssetManifest.BundleNames);
-
-            if (_activeAssetRequests.Contains(bundleName))
-            {
-                Debug.LogError("Another Asset Valid request already in process, Suspending this request");
-                return false;
-            }
+            ServerAssetList = await new ContentUpdateRequest().GetServerAssetList();
             
-            _activeAssetRequests.Add(bundleName);
-            await CheckForUpdates();
-            bool isValid = Contains(bundleName,ManifestTracker.LocalAssetManifest.BundleNames);
-            _activeAssetRequests.Remove(bundleName);
-            return isValid;
+            _requestActive = false;
+            return ServerAssetList;
         }
 
-        private static bool Contains(string value,IReadOnlyList<string> stt) 
+        internal static IReadOnlyList<string> GetAssetList()
         {
-            for (int i = 0; i < stt.Count; i++)
+            if (AssetManifest == null)
             {
-                if(stt[i] == value)
-                    return true;
+                Debug.LogError("No Internet Detected, Running AssetQuery in Offline Mode. All Bundles Keys may not be detected.");
+                return ScriptManifest.GetAllBundleNames();
             }
 
-            return false;
+            return AssetManifest.BundleNames;
         }
+
+        internal async static Task<bool> IsAssetDownloaded(AssetHandle assetHandle) 
+        {
+            IReadOnlyList<string> updates = await CheckForUpdates();
+            string bundleName = assetHandle.BundleName;
+            return Utils.GetSizeOfDataFromPersistantStorage(bundleName) == GetAssetSize(assetHandle) && !Utils.Contains(bundleName,updates);
+        }
+
+        internal static bool IsBundleAvailableInBuild(AssetHandle assetHandle) 
+        {
+            return Utils.GetSizeOfDataFromStreamedStorage(assetHandle.BundleName) > 0;
+        }
+
+        internal static bool IsValidAddress(AssetHandle assetHandle)
+        {
+            return Utils.Contains(assetHandle.BundleName, GetAssetList());
+        }
+
+        internal static double GetAssetSize(AssetHandle assetHandle) 
+        { 
+            if(AssetManifest == null)
+                return -1;
+
+            return AssetManifest.GetBundleSize(assetHandle.BundleName);
+        }
+        
     }
 }

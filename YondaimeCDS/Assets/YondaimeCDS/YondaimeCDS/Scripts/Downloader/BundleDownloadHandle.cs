@@ -24,9 +24,10 @@ namespace YondaimeCDS
             return downloadSuccess;
         }
 
-        internal async Task<byte[]> DownloadContent(string bundleName)
+        internal async Task<byte[]> DownloadContent(string contentName)
         {
-            string url = Path.Combine(BundleSystemConfig.REMOTE_URL, bundleName);
+            
+            string url = Path.Combine(BundleSystemConfig.REMOTE_URL, contentName);
 
             using (UnityWebRequest downloadRequest = UnityWebRequest.Get(url))
             {

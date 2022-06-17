@@ -23,7 +23,7 @@ namespace YondaimeCDS
             asset = await TryLoadAssetBundleFromDisk<T>(loadHandle);
             
             if (asset == null)
-                Debug.LogError("Invalid bundle/asset load request");
+                Debug.LogError($"Bundle load request failed for {loadHandle.BundleName}, Make sure bundle is downloaded before loading it");
 
             return asset;
         }

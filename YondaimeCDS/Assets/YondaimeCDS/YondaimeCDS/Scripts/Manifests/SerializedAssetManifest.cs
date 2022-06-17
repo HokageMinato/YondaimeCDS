@@ -15,21 +15,28 @@ namespace YondaimeCDS {
         private List<BundleDetails> m_Values;
 
         [SerializeField]
-        private List<string> pendingUpdates = new List<string>();
+        private List<string> localBundles = new List<string>();
 
 
-        internal IReadOnlyList<string> PendingUpdates { get { return pendingUpdates; } }
-       
         internal IReadOnlyList<string> BundleNames { get { return m_Keys; } }
+
+        internal IReadOnlyList<string> LocalBundles { get { return localBundles; } }
 
         private Dictionary<string, BundleDetails> m_Details;
 
 
-        internal void GenerateUpdateList(SerializedAssetManifest serverManifest, ref List<string> scriptFilteredBundleList)
+        internal void FilterAlreadyUpdatedBundles(SerializedAssetManifest serverManifest, ref List<string> scriptFilteredBundleList)
         {
             for (int i = 0; i < scriptFilteredBundleList.Count;)
             {
                 string bundleName = scriptFilteredBundleList[i];
+
+                if (!m_Details.ContainsKey(bundleName)) 
+                {
+                    i++;
+                    continue;
+                }
+
                 Hash128 serverHashValue = serverManifest.m_Details[bundleName].Hash;
                 Hash128 localHashValue = m_Details[bundleName].Hash;
 
@@ -46,17 +53,24 @@ namespace YondaimeCDS {
 
         internal void UpdateManifestData(SerializedAssetManifest serverManifest, ref List<string> scriptFilteredBundleList)
         {
-            pendingUpdates.AddRange(scriptFilteredBundleList);
+            localBundles = new List<string>(serverManifest.localBundles);
+        
+            
             Dictionary<string, BundleDetails> updates = serverManifest.m_Details;
 
             for (int i = 0; i < scriptFilteredBundleList.Count; i++)
             {
-                m_Details[scriptFilteredBundleList[i]] = updates[scriptFilteredBundleList[i]];
+                if(m_Details.ContainsKey(scriptFilteredBundleList[i]))  
+                    m_Details[scriptFilteredBundleList[i]] = updates[scriptFilteredBundleList[i]];
+                else
+                    m_Details.Add(scriptFilteredBundleList[i], updates[scriptFilteredBundleList[i]]);
+
                 Debug.Log($"updated details for {scriptFilteredBundleList[i]}");
             }
 
         }
 
+       
         public void OnAfterDeserialize()
         {
             m_Details = new Dictionary<string, BundleDetails>();
@@ -79,23 +93,13 @@ namespace YondaimeCDS {
             }
         }
 
-        
 
         internal double GetBundleSize(string bundleName) 
         {
             return m_Details[bundleName].BundleSize;
         }
 
-        internal void MarkBundleDownloaded(string bundleName)
-        {
-            pendingUpdates.Remove(bundleName);
-        }
-
-        internal bool IsBundleDownloadPending(string bundleName)
-        {
-            return pendingUpdates.Contains(bundleName);
-        }
-
+       
 
         #if UNITY_EDITOR
         public List<string> Keys { get { return m_Keys; } }
@@ -107,6 +111,10 @@ namespace YondaimeCDS {
             m_Details[bundleName] = details;
         }
 
+        public void SetLocalBundleList(List<string> bundles) 
+        { 
+            localBundles = bundles;
+        }
         #endif
 
     }

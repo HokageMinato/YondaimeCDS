@@ -9,6 +9,7 @@ namespace YondaimeCDS
         public string remoteURL;
         public string localStorageFolderName = string.Empty;
         public string serializedScriptManifest;
+        public string defaultSerializedAssetManifest;
         public bool autoUpdateCatelog;
 
         public static string STORAGE_PATH;
@@ -38,9 +39,6 @@ namespace YondaimeCDS
 
         public void SetRemoteURL(string url) 
         {
-            if (!Uri.IsWellFormedUriString(url, UriKind.Absolute))
-                throw new Exception("Invalid URL format");
-
             remoteURL = url;
             REMOTE_URL = url;
         }

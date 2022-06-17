@@ -1,5 +1,6 @@
 ﻿using UnityEditor;
 using System;
+using System.Collections.Generic;
 
 namespace AssetBundleBrowser.AssetBundleDataSource
 {
@@ -11,6 +12,9 @@ namespace AssetBundleBrowser.AssetBundleDataSource
         /// <summary>
         /// Directory to place build result
         /// </summary>
+        /// 
+        public List<string> localBundles = new List<string>();
+
         public string outputDirectory
         {
             get { return m_outputDirectory; }
