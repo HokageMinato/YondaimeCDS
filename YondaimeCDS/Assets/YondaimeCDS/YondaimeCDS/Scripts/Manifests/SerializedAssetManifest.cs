@@ -14,13 +14,10 @@ namespace YondaimeCDS {
         [SerializeField]
         private List<BundleDetails> m_Values;
 
-        [SerializeField]
-        private List<string> localBundles = new List<string>();
-
+        
 
         internal IReadOnlyList<string> BundleNames { get { return m_Keys; } }
 
-        internal IReadOnlyList<string> LocalBundles { get { return localBundles; } }
 
         private Dictionary<string, BundleDetails> m_Details;
 
@@ -53,8 +50,6 @@ namespace YondaimeCDS {
 
         internal void UpdateManifestData(SerializedAssetManifest serverManifest, ref List<string> scriptFilteredBundleList)
         {
-            localBundles = new List<string>(serverManifest.localBundles);
-        
             
             Dictionary<string, BundleDetails> updates = serverManifest.m_Details;
 
@@ -111,10 +106,10 @@ namespace YondaimeCDS {
             m_Details[bundleName] = details;
         }
 
-        public void SetLocalBundleList(List<string> bundles) 
-        { 
-            localBundles = bundles;
-        }
+        //public void SetLocalBundleList(List<string> bundles) 
+        //{ 
+        //    localBundles = bundles;
+        //}
         #endif
 
     }

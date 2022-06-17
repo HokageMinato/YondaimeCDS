@@ -13,16 +13,15 @@ namespace YondaimeCDS
         #region PRIVATE_PROPERTIES
         private static SerializedAssetManifest AssetManifest { get { return ManifestTracker.LocalAssetManifest; } }
         private static ScriptManifest ScriptManifest { get { return ManifestTracker.LocalScriptManifest; } }
-        public static IReadOnlyList<string> ServerAssetList { get; private set; }
+        private static IReadOnlyList<string> ServerAssetList;
         #endregion
 
 
-        internal static async Task<IReadOnlyList<string>> CheckForUpdates()
+        internal static async Task<IReadOnlyList<string>> GetServerAssetUpdatesList()
         {
             bool wasAwaitingForResult = _requestActive;
             while (_requestActive)
             {
-             
                 await Task.Yield();
             }
 
@@ -33,7 +32,7 @@ namespace YondaimeCDS
             }
 
             _requestActive = true;
-            ServerAssetList = await new ContentUpdateRequest().GetServerAssetList();
+            ServerAssetList = await new ContentUpdateRequest().GetServerAssetUpdatesList();
             
             _requestActive = false;
             return ServerAssetList;
@@ -52,7 +51,7 @@ namespace YondaimeCDS
 
         internal async static Task<bool> IsAssetDownloaded(AssetHandle assetHandle) 
         {
-            IReadOnlyList<string> updates = await CheckForUpdates();
+            IReadOnlyList<string> updates = await GetServerAssetUpdatesList();
             string bundleName = assetHandle.BundleName;
             return Utils.GetSizeOfDataFromPersistantStorage(bundleName) == GetAssetSize(assetHandle) && !Utils.Contains(bundleName,updates);
         }

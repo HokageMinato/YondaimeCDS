@@ -103,8 +103,8 @@ namespace AssetBundleBrowser.AssetBundleDataSource
                 return false;
             }
 
-            
-            YondaimeCDS.ManifestGenerator.GenerateManifests(buildManifest, info.outputDirectory,info.localBundles);
+
+            YondaimeCDS.ManifestGenerator.GenerateManifests(buildManifest, info.outputDirectory);//,info.localBundles);
            
 
             foreach (var assetBundleName in buildManifest.GetAllAssetBundles())

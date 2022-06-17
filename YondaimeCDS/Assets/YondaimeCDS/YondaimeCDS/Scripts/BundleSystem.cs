@@ -42,7 +42,7 @@ namespace YondaimeCDS
         {
             ManifestTracker.Initialize(_config);
             if (ManifestTracker.LocalAssetManifest == null)
-                await ContentTracker.CheckForUpdates();
+                await ContentTracker.GetServerAssetUpdatesList();
         }
 
         public static async Task SetRemoteURL(string url)
@@ -59,7 +59,7 @@ namespace YondaimeCDS
         public static async Task<IReadOnlyList<string>> CheckForContentUpdates()
         {
             await SystemInitWait();
-            return await ContentTracker.CheckForUpdates();
+            return await ContentTracker.GetServerAssetUpdatesList();
         }
 
         
@@ -90,6 +90,8 @@ namespace YondaimeCDS
         #region LOAD_HANDLES
         public static async Task<T> LoadAsset<T>(string bundleName, string assetName, Action<float> onLoadProgressChanged = null) where T : Object
         {
+
+            await SystemInitWait();
             AssetHandle loadHandle = new AssetHandle(bundleName,assetName,onLoadProgressChanged);
             
             if (!ContentTracker.IsValidAddress(loadHandle))

@@ -11,9 +11,9 @@ namespace YondaimeCDS
     public class ManifestGenerator
     {
 
-        public static void GenerateManifests(CompatibilityAssetBundleManifest buildManifest, string outputDirectory,List<string> localBundles)
+        public static void GenerateManifests(CompatibilityAssetBundleManifest buildManifest, string outputDirectory)
         {
-            SerializedAssetManifest assetManifest = GenenrateAssetManifestFrom(buildManifest, outputDirectory,localBundles);
+            SerializedAssetManifest assetManifest = GenenrateAssetManifestFrom(buildManifest, outputDirectory);
             GenerateManifestHashFromContentsOf(assetManifest, outputDirectory);
             string serializedScriptManifest = GenerateScriptManifest(outputDirectory);
             string serializedAssetManifest = Utils.Serialize(assetManifest);
@@ -44,10 +44,10 @@ namespace YondaimeCDS
             File.WriteAllBytes(Path.Combine(outputDirectory, Constants.MANIFEST_HASH), hashManifestData);
         }
 
-        private static SerializedAssetManifest GenenrateAssetManifestFrom(CompatibilityAssetBundleManifest compatibilityBuildManifest, string outputDirectory,List<string> localBundles)
+        private static SerializedAssetManifest GenenrateAssetManifestFrom(CompatibilityAssetBundleManifest compatibilityBuildManifest, string outputDirectory)
         {
             SerializedAssetManifest manifest = Utils.Deserialize<SerializedAssetManifest>(Utils.Serialize(compatibilityBuildManifest));
-            manifest.SetLocalBundleList(localBundles);
+            //manifest.SetLocalBundleList(localBundles);
             CalculateSizesOfBundle(manifest, outputDirectory);
             string serializedBundleManifest = Utils.Serialize(manifest);
             byte[] manifestData = Utils.StringToBytes(serializedBundleManifest);

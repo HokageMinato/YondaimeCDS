@@ -196,13 +196,23 @@ namespace AssetBundleBrowser
 
         void OnGUISearchBar(Rect rect)
         {
+            
+            if(m_BundleTree == null)
+                RefreshBundleTree();
+
             m_BundleTree.searchString = m_searchField.OnGUI(rect, m_BundleTree.searchString);
             m_AssetList.searchString = m_BundleTree.searchString;
         }
 
         public bool hasSearch
         {
-            get { return m_BundleTree.hasSearch;  }
+            get {
+                if (m_BundleTree == null)
+                    RefreshBundleTree();
+
+                return m_BundleTree.hasSearch; 
+            
+            }
         }
 
         private void HandleHorizontalResize()
