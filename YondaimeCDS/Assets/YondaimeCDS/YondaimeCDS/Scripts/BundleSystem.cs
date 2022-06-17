@@ -17,7 +17,7 @@ namespace YondaimeCDS
 
 
         #region INITIALZER
-
+        
         public static async Task Initialize()
         {
             if (_IS_INITIALIZED || _initializationStarted)
@@ -62,7 +62,6 @@ namespace YondaimeCDS
             return await ContentTracker.GetServerAssetUpdatesList();
         }
 
-        
 
         public static async Task<bool> IsValidAddress(string bundleName)
         {

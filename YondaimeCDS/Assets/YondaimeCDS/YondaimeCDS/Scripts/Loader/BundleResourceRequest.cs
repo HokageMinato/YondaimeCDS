@@ -39,8 +39,8 @@ namespace YondaimeCDS {
 
 		private async Task<AssetBundle> LoadBundleFromPath(string path) 
 		{
-			AssetBundleCreateRequest bundleCreationRequest;
-			bundleCreationRequest = AssetBundle.LoadFromFileAsync(path);
+			
+			AssetBundleCreateRequest bundleCreationRequest= AssetBundle.LoadFromFileAsync(path);
 		
 			if (bundleCreationRequest == null)
 		 	return null;

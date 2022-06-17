@@ -18,9 +18,26 @@ namespace YondaimeCDS
             string serializedScriptManifest = GenerateScriptManifest(outputDirectory);
             string serializedAssetManifest = Utils.Serialize(assetManifest);
             WriteConfigToResources(GenerateBundleSystemConfigData(serializedScriptManifest,serializedAssetManifest));
+            CopyLinkerXML(outputDirectory);
             DeleteExtraFilesAt(outputDirectory);
             AssetDatabase.Refresh();
             AssetDatabase.SaveAssets();
+        }
+
+        private static void CopyLinkerXML(string outputDirectory)
+        {
+            string absoluteSourcePath = Path.Combine(outputDirectory, "link.xml");
+            string absoluteTargetPath = Path.Combine("Assets","link.xml");
+            string absoluteTargetP= Path.Combine("Assets","linkOld.xml");
+
+            if (!File.Exists(absoluteSourcePath)) 
+            { 
+                File.Move(absoluteSourcePath,absoluteTargetPath);
+                return;
+            }
+
+            File.Replace(absoluteSourcePath, absoluteTargetPath,absoluteTargetP);
+            File.Delete(absoluteTargetP);
         }
 
         public static void WriteConfigToResources(BundleSystemConfig config)

@@ -2,6 +2,7 @@
 using UnityEditor;
 using System.Collections.Generic;
 using UnityEditor.Build.Pipeline;
+using YondaimeCDS;
 using UnityEngine.Build.Pipeline;
 using System.Linq;
 using UnityEditor.Build.Content;
@@ -94,17 +95,16 @@ namespace AssetBundleBrowser.AssetBundleDataSource
                 bundles[i].addressableNames = names;
             }
 
-            CompatibilityAssetBundleManifest buildManifest = CompatibilityBuildPipeline.BuildAssetBundles(info.outputDirectory,bundles, info.options, info.buildTarget);
-            
+            CompatibilityAssetBundleManifest buildManifest= YondaimeBuildPipeline.BuildAssetBundles(info.outputDirectory, bundles, info.options, info.buildTarget);
 
             if (buildManifest == null)
             {
-                Debug.Log("Error in build");
+                Debug.LogError("Error in build");
                 return false;
             }
 
-
-            YondaimeCDS.ManifestGenerator.GenerateManifests(buildManifest, info.outputDirectory);//,info.localBundles);
+           
+            ManifestGenerator.GenerateManifests(buildManifest, info.outputDirectory);//,info.localBundles);
            
 
             foreach (var assetBundleName in buildManifest.GetAllAssetBundles())
