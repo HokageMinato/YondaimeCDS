@@ -40,11 +40,11 @@ namespace YondaimeCDS
 
         internal static IReadOnlyList<string> GetAssetList()
         {
-            if (AssetManifest == null)
-            {
-                Debug.LogError("No Internet Detected, Running AssetQuery in Offline Mode. All Bundles Keys may not be detected.");
-                return ScriptManifest.GetAllBundleNames();
-            }
+            //if (AssetManifest == null)
+            //{
+            //    Debug.LogError("No Internet Detected, Running AssetQuery in Offline Mode. All Bundles Keys may not be detected.");
+            //    return ScriptManifest.GetAllBundleNames();
+            //}
 
             return AssetManifest.BundleNames;
         }

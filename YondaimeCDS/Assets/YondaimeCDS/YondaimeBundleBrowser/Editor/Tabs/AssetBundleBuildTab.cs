@@ -6,7 +6,7 @@ using System.Runtime.Serialization.Formatters.Binary;
 
 using AssetBundleBrowser.AssetBundleDataSource;
 using UnityEditor.IMGUI.Controls;
-using YondaimeCDS;
+using UnityEditor.Build.Pipeline.Utilities;
 
 namespace AssetBundleBrowser
 {
@@ -183,24 +183,24 @@ namespace AssetBundleBrowser
 
         internal void OnGUI()
         {
+
             m_ScrollPosition = EditorGUILayout.BeginScrollView(m_ScrollPosition);
             bool newState = false;
             var centeredStyle = new GUIStyle(GUI.skin.GetStyle("Label"));
             centeredStyle.alignment = TextAnchor.UpperCenter;
+
+
             GUILayout.Label(new GUIContent("Build setup"), centeredStyle);
-            //basic options
-            EditorGUILayout.Space();
-            EditorGUILayout.Space();
-            EditorGUILayout.Space();
             GUILayout.BeginVertical();
 
             // build target
-            using (new EditorGUI.DisabledScope (!AssetBundleModel.Model.DataSource.CanSpecifyBuildTarget)) {
+            using (new EditorGUI.DisabledScope(!AssetBundleModel.Model.DataSource.CanSpecifyBuildTarget))
+            {
                 ValidBuildTarget tgt = (ValidBuildTarget)EditorGUILayout.EnumPopup(m_TargetContent, m_UserData.m_BuildTarget);
                 if (tgt != m_UserData.m_BuildTarget)
                 {
                     m_UserData.m_BuildTarget = tgt;
-                    if(m_UserData.m_UseDefaultPath)
+                    if (m_UserData.m_UseDefaultPath)
                     {
                         m_UserData.m_OutputPath = "AssetBundles/";
                         m_UserData.m_OutputPath += m_UserData.m_BuildTarget.ToString();
@@ -210,8 +210,9 @@ namespace AssetBundleBrowser
             }
 
             ////output path
-            using (new EditorGUI.DisabledScope (!AssetBundleModel.Model.DataSource.CanSpecifyBuildOutputDirectory)) {
-                EditorGUILayout.Space();
+            using (new EditorGUI.DisabledScope(!AssetBundleModel.Model.DataSource.CanSpecifyBuildOutputDirectory))
+            {
+                DrawSpace(2);
                 GUILayout.BeginHorizontal();
                 var newPath = EditorGUILayout.TextField("Output Path", m_UserData.m_OutputPath);
                 if (!System.String.IsNullOrEmpty(newPath) && newPath != m_UserData.m_OutputPath)
@@ -257,15 +258,16 @@ namespace AssetBundleBrowser
             }
 
             // advanced options
-            using (new EditorGUI.DisabledScope (!AssetBundleModel.Model.DataSource.CanSpecifyBuildOptions)) {
-                EditorGUILayout.Space();
+            using (new EditorGUI.DisabledScope(!AssetBundleModel.Model.DataSource.CanSpecifyBuildOptions))
+            {
+                DrawSpace(2);
                 m_AdvancedSettings = EditorGUILayout.Foldout(m_AdvancedSettings, "Advanced Settings");
-                if(m_AdvancedSettings)
+                if (m_AdvancedSettings)
                 {
                     var indent = EditorGUI.indentLevel;
                     EditorGUI.indentLevel = 1;
                     CompressOptions cmp = (CompressOptions)EditorGUILayout.IntPopup(
-                        m_CompressionContent, 
+                        m_CompressionContent,
                         (int)m_UserData.m_Compression,
                         m_CompressionOptions,
                         m_CompressionValues);
@@ -295,24 +297,53 @@ namespace AssetBundleBrowser
             }
 
             //bundle Compatibility
-            EditorGUILayout.Space();
-            EditorGUILayout.Space();
-            EditorGUILayout.Space();
-            EditorGUILayout.Space();
-            EditorGUILayout.LabelField(new GUIContent("Is Bundle Locally Available:"));
+            DrawSpace(4);
             DrawLocalAssetTable();
-              
-            
+
+            DrawSpace(4);
+            DrawBuildOptions();
+
+            GUILayout.EndVertical();
+            EditorGUILayout.EndScrollView();
+        }
+
+        private void DrawBuildOptions()
+        {
             
 
-            // build.
-            EditorGUILayout.Space();
-            if (GUILayout.Button("Build") )
+            if (GUILayout.Button("Build"))
             {
                 EditorApplication.delayCall += ExecuteBuild;
             }
-            GUILayout.EndVertical();
-            EditorGUILayout.EndScrollView();
+            
+            if (GUILayout.Button("ClearBuildCache"))
+            {
+                EditorApplication.delayCall += CleanBuild;
+            }
+            
+            if (GUILayout.Button("PruneBuildCache"))
+            {
+                EditorApplication.delayCall += PruneBuild;
+            }
+
+
+
+        }
+
+        private static void DrawSpace(int spaceAmount)
+        {
+            for (int i = 0; i < spaceAmount; i++)
+                EditorGUILayout.Space();
+        }
+
+        private void CleanBuild() 
+        {
+            BuildCache.PurgeCache(true);
+        }
+
+        private void PruneBuild() 
+        {
+            BuildCache.PruneCache();
         }
 
         private void ExecuteBuild()
@@ -484,6 +515,8 @@ namespace AssetBundleBrowser
 
         private void DrawLocalAssetTable()
         {
+            EditorGUILayout.LabelField(new GUIContent("Is Bundle Locally Available:"));
+
             AssetBundleTree tree = m_bundleManageTab.BundleTree;
             if (tree == null)
                 m_bundleManageTab.RefreshBundleTree();

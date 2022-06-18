@@ -101,10 +101,13 @@ namespace YondaimeCDS
 
             bool isAssetToBeDownloaded = !await ContentTracker.IsAssetDownloaded(loadHandle) && 
                                                 !ContentTracker.IsBundleAvailableInBuild(loadHandle) &&
-                                                _config.autoUpdateCatelog; 
-                                          
+                                                _config.autoUpdateCatelog;
+
             if (isAssetToBeDownloaded)
+            {
                 await Downloader.DownloadBundle(loadHandle);
+                await Task.Delay(1500);
+            }
 
             return await Loader.LoadAsset<T>(loadHandle);
         }

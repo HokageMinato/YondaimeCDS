@@ -30,7 +30,7 @@ namespace YondaimeCDS
             string absoluteTargetPath = Path.Combine("Assets","link.xml");
             string absoluteTargetP= Path.Combine("Assets","linkOld.xml");
 
-            if (!File.Exists(absoluteSourcePath)) 
+            if (!File.Exists(absoluteTargetPath)) 
             { 
                 File.Move(absoluteSourcePath,absoluteTargetPath);
                 return;
