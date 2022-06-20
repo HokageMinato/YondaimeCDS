@@ -5,8 +5,7 @@ using YondaimeCDS;
 using System.Threading.Tasks;
 using UnityEngine.UI;
 using System.Collections.Generic;
-
-
+using UnityEngine.Networking;
 
 public class DownloadLoadTest : CustomBehaviour
 {
@@ -17,6 +16,26 @@ public class DownloadLoadTest : CustomBehaviour
     private void Start()
     {
         StartCoroutine(MonakeyTestRoutine());
+        //StartCoroutine(CustomYield());
+        // CustomYTest yTest = new CustomYTest();
+        //Debug.Log($"ending download sync {yTest.data.Length}");
+    }
+
+    int i = 0;
+
+    
+
+    private IEnumerator CustomYield() 
+    {
+        //Debug.Log("Starting download");
+      
+            yield return null;
+
+        //Debug.Log("Starting download");
+        //yield return yTest;
+        //byte[] data = yTest.data;
+
+        Debug.Log($"ending download ");
     }
 
     private IEnumerator MonakeyTestRoutine()
@@ -26,8 +45,7 @@ public class DownloadLoadTest : CustomBehaviour
         string bundleName = "testprefabg";
         string assetName = "TestPrefabG";
 
-        //string bundleName = "content";
-        //string assetName = "Content";
+        
         StartCoroutine(IsDownloaded(bundleName));
         StartCoroutine(ValidAddressTest(bundleName));
         StartCoroutine(ListUpdates());
@@ -44,41 +62,33 @@ public class DownloadLoadTest : CustomBehaviour
     private IEnumerator Initialize() 
     {
         Debug.Log("inis");
-        Task init = BundleSystem.Initialize();
-        while (!init.IsCompleted)
-            yield return null;
+        BundleSystem.Initialize();
+        yield return null;
         Debug.Log("inie");
     }
 
     private IEnumerator IsDownloaded(string bundeName)
     {
-        Task<bool> bundleUpdateTask = BundleSystem.IsDownloaded(bundeName);
-        while (!bundleUpdateTask.IsCompleted)
-            yield return null;
-
-        Debug.Log($"{bundeName} is downloaded:{bundleUpdateTask.Result}");
+        //Task<bool> bundleUpdateTask = BundleSystem.IsDownloaded(bundeName);
+        bool bundleUpdateTask = BundleSystem.IsDownloaded(bundeName);
+        yield return null;
+        Debug.Log($"{bundeName} is downloaded:{bundleUpdateTask}");
     }
 
     private IEnumerator ValidAddressTest(string bundleName) 
     {
-        Task<bool> validAddressTask = BundleSystem.IsValidAddress(bundleName);
-        while (!validAddressTask.IsCompleted)
-            yield return null;
-
-        Debug.Log($"{bundleName} is valid add {validAddressTask.Result}");
+        yield return null;
+        bool validAddressTask = BundleSystem.IsValidAddress(bundleName);
+        Debug.Log($"{bundleName} is valid add {validAddressTask}");
     }
 
     private IEnumerator ListUpdates() 
     {
+        yield return null;
+        IReadOnlyList<string> update = BundleSystem.CheckForContentUpdates();
         
-        Task<IReadOnlyList<string>> update = BundleSystem.CheckForContentUpdates();
-        while (!update.IsCompleted)
-        {
-            yield return null;
-        }
-
-        string updateCount = $" updates: {update.Result.Count} \n";
-        foreach (var item in update.Result)
+        string updateCount = $" updates: {update.Count} \n";
+        foreach (var item in update)
             updateCount += $"{item} \n";
         
         Debug.Log(updateCount);
@@ -86,38 +96,58 @@ public class DownloadLoadTest : CustomBehaviour
 
     private IEnumerator DownloadBundle(string bundleName) 
     {
-        Task<bool> downloadTask = BundleSystem.DownloadBundle(bundleName);
-        while (!downloadTask.IsCompleted)
-        {
-            yield return null;
-        }
-        Debug.Log($"{bundleName}: Is download successful {downloadTask.Result}");
+        bool downloadTask = BundleSystem.DownloadBundle(bundleName);
+        
+        Debug.Log($"{bundleName}: Is download successful {downloadTask}");
+        yield return null;
     }
     
     private IEnumerator GetBundleSize(string bundleName) 
     {
-        Task<double> downloadTask = BundleSystem.GetAssetSize(bundleName);
-        while (!downloadTask.IsCompleted)
-        {
-            yield return null;
-        }
-        Debug.Log($"{bundleName}: downloadSize {downloadTask.Result}");
+        double downloadTask = BundleSystem.GetAssetSize(bundleName);
+        Debug.Log($"{bundleName}: downloadSize {downloadTask}");
+        yield return null;
     }
 
     private IEnumerator LoadBundle(string bundleName,string assetName) 
     {
-        Task<GameObject> loadTask = BundleSystem.LoadAsset<GameObject>(bundleName,assetName, prog => { progressbar.fillAmount = prog; });
-
-        while (!loadTask.IsCompleted)
-            yield return null;
-
-        GameObject loadedObject = loadTask.Result;
+        GameObject loadedObject = BundleSystem.LoadAsset<GameObject>(bundleName,assetName, prog => { progressbar.fillAmount = prog; });
 
         #if UNITY_EDITOR
         InEditorShaderFix.FixShadersForEditor(loadedObject);
         #endif
-
+        yield return null;
         MonoInstantiate(loadedObject);
     }
 
+
+
+
+
+
+
+
+    
+
+
+    private void Download()
+    {
+        using (UnityWebRequest downloadRequest = UnityWebRequest.Get("https://github.com/HokageMinato/YondaimeCDSContents/raw/main/testprefab"))
+        {
+            downloadRequest.SendWebRequest();
+
+            while (!downloadRequest.isDone)
+            { }
+
+            Debug.Log($"Download Result {downloadRequest.result}");
+
+            if (downloadRequest.result == UnityWebRequest.Result.Success)
+            {
+                Debug.Log(downloadRequest.downloadHandler.data);
+            }
+
+            else
+                Debug.Log(downloadRequest.error);
+        }
+    }
 }

@@ -44,19 +44,19 @@ namespace YondaimeCDS
         private List<string> _compatibleBundles = new List<string>();
 
 
-        internal async Task<IReadOnlyList<string>> GetServerAssetUpdatesList()
+        internal IReadOnlyList<string> GetServerAssetUpdatesList()
         {
-            await DownloadManifestHash();
+            DownloadManifestHash();
             if (!ServerManifestHashPresent())
                 return _compatibleBundles;
 
             if (!AssetManifestHashUpdateDetected())
                 return _compatibleBundles;
 
-            await DownloadScriptManifest();
+            DownloadScriptManifest();
             FilterScriptIncompitableBundles();
 
-            await DownloadAssetManifest();
+            DownloadAssetManifest();
             if (LocalAssetManifest != null)
                 FilterAlreadyUpdatedBundles();
 
@@ -70,9 +70,9 @@ namespace YondaimeCDS
         }
 
 
-        private async Task DownloadManifestHash()
+        private void DownloadManifestHash()
         {
-            byte[] manifestHashBuffer = await DownloadFromServer(MANIFEST_HASH);
+            byte[] manifestHashBuffer = DownloadFromServer(MANIFEST_HASH);
             if (manifestHashBuffer == null)
             {
                 Debug.Log("Empty manifestHash recieved");
@@ -130,9 +130,9 @@ namespace YondaimeCDS
         #region ASSET_MANIFEST_MANAGEMENT
 
 
-        private async Task DownloadAssetManifest()
+        private void DownloadAssetManifest()
         {
-            byte[] serverManifestBuffer = await DownloadFromServer(ASSET_MANIFEST);
+            byte[] serverManifestBuffer = DownloadFromServer(ASSET_MANIFEST);
             if (serverManifestBuffer == null)
             {
                 Debug.Log("Empty bytes recieved for AssetManifest, check source");
@@ -167,9 +167,9 @@ namespace YondaimeCDS
         }
 
 
-        private async Task DownloadScriptManifest()
+        private void DownloadScriptManifest()
         {
-            byte[] scriptManifestBuffer = await DownloadFromServer(SCRIPT_MANIFEST);
+            byte[] scriptManifestBuffer = DownloadFromServer(SCRIPT_MANIFEST);
             if (scriptManifestBuffer == null)
             {
                 Debug.Log("Empty script manifest received from server");
@@ -185,9 +185,9 @@ namespace YondaimeCDS
         
         #region IO_OPERATION
 
-        private async Task<byte[]> DownloadFromServer(string manifestName)
+        private byte[] DownloadFromServer(string manifestName)
         {
-            return await new BundleDownloadHandle().DownloadContent(manifestName);
+            return new BundleDownloadHandle().DownloadContent(manifestName);
             //Dont save, every first change detection will replace old with new and next run will mark incompitables compitable.
             //Write only if compatibility check passes.
         }

@@ -17,13 +17,11 @@ namespace YondaimeCDS
         #endregion
 
 
-        internal static async Task<IReadOnlyList<string>> GetServerAssetUpdatesList()
+        internal static IReadOnlyList<string> GetServerAssetUpdatesList()
         {
             bool wasAwaitingForResult = _requestActive;
             while (_requestActive)
-            {
-                await Task.Yield();
-            }
+            {}
 
             if (wasAwaitingForResult)
             {
@@ -32,8 +30,7 @@ namespace YondaimeCDS
             }
 
             _requestActive = true;
-            ServerAssetList = await new ContentUpdateRequest().GetServerAssetUpdatesList();
-            
+            ServerAssetList = new ContentUpdateRequest().GetServerAssetUpdatesList();
             _requestActive = false;
             return ServerAssetList;
         }
@@ -49,9 +46,9 @@ namespace YondaimeCDS
             return AssetManifest.BundleNames;
         }
 
-        internal async static Task<bool> IsAssetDownloaded(AssetHandle assetHandle) 
+        internal static bool IsAssetDownloaded(AssetHandle assetHandle) 
         {
-            IReadOnlyList<string> updates = await GetServerAssetUpdatesList();
+            IReadOnlyList<string> updates = GetServerAssetUpdatesList();
             string bundleName = assetHandle.BundleName;
             return Utils.GetSizeOfDataFromPersistantStorage(bundleName) == GetAssetSize(assetHandle) && !Utils.Contains(bundleName,updates);
         }

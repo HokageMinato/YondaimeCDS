@@ -10,7 +10,7 @@ namespace YondaimeCDS
         private static Dictionary<string, UnityEngine.Object> _LOADED_ASSETS = new Dictionary<string, UnityEngine.Object>();
 
 
-        internal static async Task<T> LoadAsset<T>(AssetHandle loadHandle) where T : UnityEngine.Object
+        internal static T LoadAsset<T>(AssetHandle loadHandle) where T : UnityEngine.Object
         {
             T asset = TryLoadAssetFromAssetCache<T>(loadHandle);
             if(asset != null)
@@ -20,7 +20,7 @@ namespace YondaimeCDS
             if (asset != null)
                 return asset;
 
-            asset = await TryLoadAssetBundleFromDisk<T>(loadHandle);
+            asset = TryLoadAssetBundleFromDisk<T>(loadHandle);
             
             if (asset == null)
                 Debug.LogError($"Bundle load request failed for {loadHandle.BundleName}, Make sure bundle is downloaded before loading it");
@@ -72,9 +72,9 @@ namespace YondaimeCDS
         }
 
 
-        private static async Task<T> TryLoadAssetBundleFromDisk<T>(AssetHandle assetHandle) where T : UnityEngine.Object 
+        private static T TryLoadAssetBundleFromDisk<T>(AssetHandle assetHandle) where T : UnityEngine.Object 
         {
-            AssetBundle bundle = await new BundleResourceRequest().LoadAssetBundle(assetHandle);
+            AssetBundle bundle = new BundleResourceRequest().LoadAssetBundle(assetHandle);
             
             if (bundle == null)
                 return default;

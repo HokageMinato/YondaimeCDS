@@ -10,37 +10,38 @@ namespace YondaimeCDS {
 		private AssetHandle _loadHandle;
 
 
-		internal async Task<AssetBundle> LoadAssetBundle(AssetHandle loadHandle) 
+		internal AssetBundle LoadAssetBundle(AssetHandle loadHandle) 
 		{
 			_loadHandle = loadHandle;
 			AssetBundle bundle;
 
 			if (ContentTracker.IsBundleAvailableInBuild(_loadHandle))
 			{
-				bundle = await TryLoadFromStreamedStorage();
+				bundle = TryLoadFromStreamedStorage();
 				return bundle; 
 			}
 
-			bundle = await TryLoadFromPersistantStorage();
+			bundle = TryLoadFromPersistantStorage();
 			return bundle;
 		}
 
-		private async Task<AssetBundle> TryLoadFromPersistantStorage() 
+		private AssetBundle TryLoadFromPersistantStorage() 
 		{
 			Debug.Log($"Loading {_loadHandle.BundleName} from Persistant Storage");
-			return await LoadBundleFromPath(Path.Combine(BundleSystemConfig.STORAGE_PATH, _loadHandle.BundleName));
+			return LoadBundleFromPath(Path.Combine(BundleSystemConfig.STORAGE_PATH, _loadHandle.BundleName));
 		}
 		
-		private async Task<AssetBundle> TryLoadFromStreamedStorage() 
+		private  AssetBundle TryLoadFromStreamedStorage() 
 		{
 			Debug.Log($"Loading {_loadHandle.BundleName} from Local Storage");
-			return await LoadBundleFromPath(Path.Combine(BundleSystemConfig.STREAM_PATH, _loadHandle.BundleName));
+			return LoadBundleFromPath(Path.Combine(BundleSystemConfig.STREAM_PATH, _loadHandle.BundleName));
 		}
 
-		private async Task<AssetBundle> LoadBundleFromPath(string path) 
+		private async Task<AssetBundle> LoadBundleFromPathAsync(string path) 
 		{
 			
 			AssetBundleCreateRequest bundleCreationRequest= AssetBundle.LoadFromFileAsync(path);
+			
 		
 			if (bundleCreationRequest == null)
 		 	return null;
@@ -53,6 +54,13 @@ namespace YondaimeCDS {
 			}
 
 			return bundleCreationRequest.assetBundle;
+		}
+		
+		private AssetBundle LoadBundleFromPath(string path) 
+		{
+			
+			AssetBundle bundle= AssetBundle.LoadFromFile(path);
+			return bundle;
 		}
 
 

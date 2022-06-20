@@ -12,23 +12,20 @@ namespace YondaimeCDS
         #endregion
 
        
-        internal static async Task<bool> DownloadBundle(AssetHandle downloadHandle)
+        internal static bool DownloadBundle(AssetHandle downloadHandle)
         {
 
             while (IsDownloadAlreadyInProgress(downloadHandle))
-            { 
-                await Task.Yield();
-                return await IsBundleAlreadyDownloaded(downloadHandle);
-            }
-           
-            if (await IsBundleAlreadyDownloaded(downloadHandle))
+            {}
+
+            if (IsBundleAlreadyDownloaded(downloadHandle))
             {
                 Debug.Log($"Latest Bundle Available");
-                return false;
+                return true;
             }
 
             _activeDownloads.Add(downloadHandle.BundleName);
-            bool downloadSuccess = await new BundleDownloadHandle().DownloadBundle(downloadHandle);
+            bool downloadSuccess = new BundleDownloadHandle().DownloadBundle(downloadHandle);
             MarkBundleDownloaded(downloadHandle, downloadSuccess);
             return downloadSuccess;
         }
@@ -40,9 +37,9 @@ namespace YondaimeCDS
         }
 
        
-        private async static Task<bool> IsBundleAlreadyDownloaded(AssetHandle downloadHandle)
+        private static bool IsBundleAlreadyDownloaded(AssetHandle downloadHandle)
         {
-            return await ContentTracker.IsAssetDownloaded(downloadHandle);
+            return ContentTracker.IsAssetDownloaded(downloadHandle);
         }
 
         public static bool IsDownloadAlreadyInProgress(AssetHandle downloadHandle)

@@ -1,6 +1,4 @@
-using System;
 using System.IO;
-using System.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.Networking;
 
@@ -11,20 +9,20 @@ namespace YondaimeCDS
 
         private AssetHandle _assetHandle;
 
-        internal async Task<bool> DownloadBundle(AssetHandle assetHandle)
+        internal bool DownloadBundle(AssetHandle assetHandle)
         {
             
             _assetHandle = assetHandle;
             string bundleName = assetHandle.BundleName;
             string absoluteUrl = Path.Combine(BundleSystemConfig.REMOTE_URL, bundleName);
             string absoluteSavePath = Path.Combine(BundleSystemConfig.STORAGE_PATH, bundleName);
-            bool downloadSuccess = await DownloadBundleContent(absoluteUrl,absoluteSavePath);
+            bool downloadSuccess = DownloadBundleContent(absoluteUrl,absoluteSavePath);
             
             _assetHandle = null;
             return downloadSuccess;
         }
 
-        internal async Task<byte[]> DownloadContent(string contentName)
+        internal byte[] DownloadContent(string contentName)
         {
             
             string url = Path.Combine(BundleSystemConfig.REMOTE_URL, contentName);
@@ -34,9 +32,7 @@ namespace YondaimeCDS
                 downloadRequest.SendWebRequest();
 
                 while (!downloadRequest.isDone)
-                {
-                    await Task.Yield();
-                }
+                {}
 
 
                 if (downloadRequest.result == UnityWebRequest.Result.Success)
@@ -51,7 +47,7 @@ namespace YondaimeCDS
             }
         }
 
-        private async Task<bool> DownloadBundleContent(string absoluteUrl, string absoluteSavePath)
+        private bool DownloadBundleContent(string absoluteUrl, string absoluteSavePath)
         {
           
             using (UnityWebRequest downloadRequest = UnityWebRequest.Get(absoluteUrl))
@@ -62,7 +58,6 @@ namespace YondaimeCDS
                 while (!downloadRequest.isDone)
                 {
                     _assetHandle.OnOperationProgressChanged?.Invoke(downloadRequest.downloadProgress);
-                    await Task.Yield();
                 }
 
                 if (downloadRequest.result == UnityWebRequest.Result.Success)

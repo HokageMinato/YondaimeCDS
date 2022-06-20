@@ -18,7 +18,7 @@ namespace YondaimeCDS
 
         #region INITIALZER
         
-        public static async Task Initialize()
+        public static void Initialize()
         {
             if (_IS_INITIALIZED || _initializationStarted)
             {
@@ -28,7 +28,7 @@ namespace YondaimeCDS
 
             _initializationStarted = true;
             LoadSystemConfig();
-            await InitializeManifestTracker();
+            InitializeManifestTracker();
             _IS_INITIALIZED = true;
         }
 
@@ -38,16 +38,16 @@ namespace YondaimeCDS
             Debug.Log(_config.remoteURL + "iro");
         }
 
-        private static async Task InitializeManifestTracker()
+        private static void InitializeManifestTracker()
         {
             ManifestTracker.Initialize(_config);
             if (ManifestTracker.LocalAssetManifest == null)
-                await ContentTracker.GetServerAssetUpdatesList();
+                 ContentTracker.GetServerAssetUpdatesList();
         }
 
-        public static async Task SetRemoteURL(string url)
+        public static void SetRemoteURL(string url)
         {
-            await SystemInitWait();
+            SystemInitWait();
             ValidURLCheck(url);
             _config.SetRemoteURL(url);
         }
@@ -56,23 +56,23 @@ namespace YondaimeCDS
 
 
         #region CONTENT_TRACKING
-        public static async Task<IReadOnlyList<string>> CheckForContentUpdates()
+        public static IReadOnlyList<string> CheckForContentUpdates()
         {
-            await SystemInitWait();
-            return await ContentTracker.GetServerAssetUpdatesList();
+            SystemInitWait();
+            return ContentTracker.GetServerAssetUpdatesList();
         }
 
 
-        public static async Task<bool> IsValidAddress(string bundleName)
+        public static bool IsValidAddress(string bundleName)
         {
-            await SystemInitWait();
+            SystemInitWait();
             AssetHandle assetHandle = new AssetHandle(bundleName);
             return ContentTracker.IsValidAddress(assetHandle);
         }
 
-        public static async Task<double> GetAssetSize(string bundleName) 
+        public static double GetAssetSize(string bundleName) 
         {
-            await SystemInitWait();
+            SystemInitWait();
             AssetHandle assetHandle = new AssetHandle(bundleName);
             if (!ContentTracker.IsValidAddress(assetHandle))
             {
@@ -87,10 +87,10 @@ namespace YondaimeCDS
 
 
         #region LOAD_HANDLES
-        public static async Task<T> LoadAsset<T>(string bundleName, string assetName, Action<float> onLoadProgressChanged = null) where T : Object
+        public static T LoadAsset<T>(string bundleName, string assetName, Action<float> onLoadProgressChanged = null) where T : Object
         {
 
-            await SystemInitWait();
+            SystemInitWait();
             AssetHandle loadHandle = new AssetHandle(bundleName,assetName,onLoadProgressChanged);
             
             if (!ContentTracker.IsValidAddress(loadHandle))
@@ -99,22 +99,21 @@ namespace YondaimeCDS
                 return null;
             }
 
-            bool isAssetToBeDownloaded = !await ContentTracker.IsAssetDownloaded(loadHandle) && 
+            bool isAssetToBeDownloaded = !ContentTracker.IsAssetDownloaded(loadHandle) && 
                                                 !ContentTracker.IsBundleAvailableInBuild(loadHandle) &&
                                                 _config.autoUpdateCatelog;
 
             if (isAssetToBeDownloaded)
             {
-                await Downloader.DownloadBundle(loadHandle);
-                await Task.Delay(1500);
+                Downloader.DownloadBundle(loadHandle);
             }
 
-            return await Loader.LoadAsset<T>(loadHandle);
+            return Loader.LoadAsset<T>(loadHandle);
         }
 
-        public static async Task UnloadBundle(string bundleName)
+        public static void UnloadBundle(string bundleName)
         {
-            await SystemInitWait();
+            SystemInitWait();
             
             AssetHandle unloadHandle = new AssetHandle(bundleName);
 
@@ -131,10 +130,9 @@ namespace YondaimeCDS
 
         #region DOWNLOAD_HANDLES
 
-        public static async Task<bool> DownloadBundle(string bundleName, Action<float> OnProgressChanged = null)
+        public static bool DownloadBundle(string bundleName, Action<float> OnProgressChanged = null)
         {
-            await SystemInitWait();
-
+            SystemInitWait();
             AssetHandle downloadHandle = new AssetHandle(bundleName, OnProgressChanged);
             
             if (!ContentTracker.IsValidAddress(downloadHandle))
@@ -143,12 +141,12 @@ namespace YondaimeCDS
                 return false;
             }
 
-            return await Downloader.DownloadBundle(downloadHandle);
+            return Downloader.DownloadBundle(downloadHandle);
         }
 
-        public static async Task<bool> IsDownloaded(string bundleName)
+        public static bool IsDownloaded(string bundleName)
         {
-            await SystemInitWait();
+            SystemInitWait();
             AssetHandle downloadCheckHandle = new AssetHandle(bundleName);
             if (!ContentTracker.IsValidAddress(downloadCheckHandle))
             {
@@ -156,7 +154,7 @@ namespace YondaimeCDS
                 return false;
             }
 
-            return await ContentTracker.IsAssetDownloaded(downloadCheckHandle);
+            return ContentTracker.IsAssetDownloaded(downloadCheckHandle);
         }
         #endregion
 
@@ -175,12 +173,10 @@ namespace YondaimeCDS
 
         }
 
-        private static async Task SystemInitWait() 
+        private static void SystemInitWait() 
         {
             while (!_IS_INITIALIZED) 
-            {
-                await Task.Yield();
-            }
+            {}
         }
 
         private static bool IsCatelogSetToAutoUpdate() 
