@@ -75,7 +75,7 @@ namespace YondaimeCDS
             byte[] manifestHashBuffer = await DownloadFromServer(MANIFEST_HASH);
             if (manifestHashBuffer == null)
             {
-                Debug.Log("Empty manifestHash recieved");
+                BundleSystem.Log("Empty manifestHash recieved");
                 return;
             }
             
@@ -109,7 +109,7 @@ namespace YondaimeCDS
 
         private bool BundleUpdatesPresent()
         {
-            Debug.Log($"Updates present {_compatibleBundles.Count > 0}");
+            BundleSystem.Log($"Updates present {_compatibleBundles.Count > 0}");
             return _compatibleBundles.Count > 0;
         }
 
@@ -135,7 +135,7 @@ namespace YondaimeCDS
             byte[] serverManifestBuffer = await DownloadFromServer(ASSET_MANIFEST);
             if (serverManifestBuffer == null)
             {
-                Debug.Log("Empty bytes recieved for AssetManifest, check source");
+                BundleSystem.Log("Empty bytes recieved for AssetManifest, check source");
                 return;
             }
 
@@ -172,7 +172,7 @@ namespace YondaimeCDS
             byte[] scriptManifestBuffer = await DownloadFromServer(SCRIPT_MANIFEST);
             if (scriptManifestBuffer == null)
             {
-                Debug.Log("Empty script manifest received from server");
+                BundleSystem.Log("Empty script manifest received from server");
                 return;
             }
 

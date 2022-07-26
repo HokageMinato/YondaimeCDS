@@ -13,31 +13,40 @@ public class DownloadLoadTest : CustomBehaviour
     public Image progressbar;
     private HashSet<int> set= new HashSet<int>() { 1,2,3};
 
+    string bundleName = "testprefabg";
+    string assetName = "TestPrefabG";
+
+    string bundleName2 = "testprefab";
+    string assetName2 = "TestPrefab";
+
     [ContextMenu("Test")]
     private void Start()
     {
         StartCoroutine(MonakeyTestRoutine());
     }
 
+   
+
+
     private IEnumerator MonakeyTestRoutine()
     {
+
+        yield return new WaitForSeconds(1);
         //MonkeyTest Routine
-
-        string bundleName = "testprefabg";
-        string assetName = "TestPrefabG";
-
-        //string bundleName = "content";
-        //string assetName = "Content";
-        StartCoroutine(IsDownloaded(bundleName));
-        StartCoroutine(ValidAddressTest(bundleName));
-        StartCoroutine(ListUpdates());
-        StartCoroutine(GetBundleSize(bundleName));
-        StartCoroutine(DownloadBundle(bundleName));
-        StartCoroutine(LoadBundle(bundleName, assetName));
+        //StartCoroutine(IsDownloaded(bundleName));
+        //StartCoroutine(ValidAddressTest(bundleName));
+        //StartCoroutine(ListUpdates());
+        //StartCoroutine(GetBundleSize(bundleName));
+        //StartCoroutine(DownloadBundle(bundleName2));
         StartCoroutine(Initialize());
+        yield return LoadBundle(bundleName, assetName);
+        //yield return LoadBundle(bundleName2, assetName2);
+        
+        //StartCoroutine(UnloadBundle(bundleName));
+        //StartCoroutine(UnloadBundle(bundleName2));
 
-        yield return null;
     }
+        
 
 
 
@@ -106,7 +115,7 @@ public class DownloadLoadTest : CustomBehaviour
 
     private IEnumerator LoadBundle(string bundleName,string assetName) 
     {
-        Task<GameObject> loadTask = BundleSystem.LoadAsset<GameObject>(bundleName,assetName, prog => { progressbar.fillAmount = prog; });
+        Task<GameObject> loadTask = BundleSystem.LoadBundle<GameObject>(bundleName,assetName, prog => { progressbar.fillAmount = prog; });
 
         while (!loadTask.IsCompleted)
             yield return null;
@@ -118,6 +127,16 @@ public class DownloadLoadTest : CustomBehaviour
         #endif
 
         MonoInstantiate(loadedObject);
+    }
+
+    private IEnumerator UnloadBundle(string bundleName)
+    {
+        Task downloadTask = BundleSystem.UnloadBundle(bundleName);
+        while (!downloadTask.IsCompleted)
+        {
+            yield return null;
+        }
+        Debug.Log($"{bundleName}: unloaded");
     }
 
 }

@@ -83,7 +83,7 @@ namespace AssetBundleBrowser.AssetBundleDataSource
             
             if(info == null)
             {
-                Debug.Log("Error in build");
+                Debug.LogError("Error in build");
                 return false;
             }
 

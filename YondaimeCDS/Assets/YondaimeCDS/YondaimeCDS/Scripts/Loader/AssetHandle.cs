@@ -3,11 +3,12 @@ using System;
 
 namespace YondaimeCDS
 {
-    internal class AssetHandle 
+    internal class AssetHandle : IEquatable<AssetHandle>
     {
         internal string BundleName { get; private set; }
         internal string AssetName { get; private set; }
         internal Action<float> OnOperationProgressChanged { get; private set; }
+        internal bool IsDependencyBundle { get; private set; }
 
 
 
@@ -16,20 +17,26 @@ namespace YondaimeCDS
             BundleName = bundleName;
             AssetName = assetName;
             OnOperationProgressChanged = onOperationProgressChanged; 
+            IsDependencyBundle = false;
         }
-
-        internal AssetHandle(string bundleName,Action<float> onOperationProgressChanged = null)
+        
+        internal AssetHandle(string bundleName, bool isDependencyBundle) 
         {
             BundleName = bundleName;
-            OnOperationProgressChanged= onOperationProgressChanged;
+            IsDependencyBundle = isDependencyBundle;
         }
 
-        internal void SetLoadProgress(float progressValue) 
+ 
+
+        internal void SetOperationProgress(float progressValue) 
         { 
             OnOperationProgressChanged?.Invoke(progressValue);
         }
 
-
+        public bool Equals(AssetHandle other)
+        {
+            return other.GetHashCode() == GetHashCode();
+        }
     }
 
 

@@ -15,8 +15,8 @@ namespace YondaimeCDS {
         private List<BundleDetails> m_Values;
 
         
-
         internal IReadOnlyList<string> BundleNames { get { return m_Keys; } }
+
 
 
         private Dictionary<string, BundleDetails> m_Details;
@@ -60,9 +60,20 @@ namespace YondaimeCDS {
                 else
                     m_Details.Add(scriptFilteredBundleList[i], updates[scriptFilteredBundleList[i]]);
 
-                Debug.Log($"updated details for {scriptFilteredBundleList[i]}");
+                BundleSystem.Log($"updated details for {scriptFilteredBundleList[i]}");
             }
 
+        }
+
+        internal string[] GetBundleDependencies(AssetHandle assetHandle) 
+        {
+            string bundleName = assetHandle.BundleName;
+            if (m_Details.ContainsKey(bundleName)) 
+            {
+                return m_Details[bundleName].Dependencies;
+            }
+
+            return default;
         }
 
        

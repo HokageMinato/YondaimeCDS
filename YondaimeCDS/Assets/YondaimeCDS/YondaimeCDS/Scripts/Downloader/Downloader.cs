@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using UnityEngine;
@@ -11,38 +10,33 @@ namespace YondaimeCDS
         private static HashSet<string> _activeDownloads = new HashSet<string>();
         #endregion
 
-       
+
         internal static async Task<bool> DownloadBundle(AssetHandle downloadHandle)
         {
 
             while (IsDownloadAlreadyInProgress(downloadHandle))
             { 
-                await Task.Yield();
-                return await IsBundleAlreadyDownloaded(downloadHandle);
+                await Task.Delay(64);
             }
            
-            if (await IsBundleAlreadyDownloaded(downloadHandle))
+            if (IsBundleAlreadyDownloaded(downloadHandle))
             {
-                Debug.Log($"Latest Bundle Available");
-                return false;
+                BundleSystem.Log($"Latest Bundle Available:{downloadHandle.BundleName}");
+                return true;
             }
 
             _activeDownloads.Add(downloadHandle.BundleName);
+
             bool downloadSuccess = await new BundleDownloadHandle().DownloadBundle(downloadHandle);
-            MarkBundleDownloaded(downloadHandle, downloadSuccess);
+            _activeDownloads.Remove(downloadHandle.BundleName);
             return downloadSuccess;
         }
 
-        private static void MarkBundleDownloaded(AssetHandle downloadHandle, bool downloadSuccess)
-        {
-            string assetName = downloadHandle.BundleName;
-            _activeDownloads.Remove(assetName);
-        }
 
        
-        private async static Task<bool> IsBundleAlreadyDownloaded(AssetHandle downloadHandle)
+        private  static bool IsBundleAlreadyDownloaded(AssetHandle downloadHandle)
         {
-            return await ContentTracker.IsAssetDownloaded(downloadHandle);
+            return ContentTracker.IsBundleDownloaded(downloadHandle);
         }
 
         public static bool IsDownloadAlreadyInProgress(AssetHandle downloadHandle)

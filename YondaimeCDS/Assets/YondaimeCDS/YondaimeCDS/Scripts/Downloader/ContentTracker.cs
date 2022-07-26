@@ -22,12 +22,12 @@ namespace YondaimeCDS
             bool wasAwaitingForResult = _requestActive;
             while (_requestActive)
             {
-                await Task.Yield();
+                await Task.Delay(64);
             }
 
             if (wasAwaitingForResult)
             {
-                Debug.LogError("UpdateRequestAlreadyActive, joining other thread result");
+                BundleSystem.Log("UpdateRequestAlreadyActive, joining other thread result");
                 return ServerAssetList;
             }
 
@@ -40,26 +40,48 @@ namespace YondaimeCDS
 
         internal static IReadOnlyList<string> GetAssetList()
         {
-            //if (AssetManifest == null)
-            //{
-            //    Debug.LogError("No Internet Detected, Running AssetQuery in Offline Mode. All Bundles Keys may not be detected.");
-            //    return ScriptManifest.GetAllBundleNames();
-            //}
-
             return AssetManifest.BundleNames;
         }
 
-        internal async static Task<bool> IsAssetDownloaded(AssetHandle assetHandle) 
+        
+
+        internal static bool IsBundleDownloaded(AssetHandle assetHandle)
         {
-            IReadOnlyList<string> updates = await GetServerAssetUpdatesList();
-            string bundleName = assetHandle.BundleName;
-            return Utils.GetSizeOfDataFromPersistantStorage(bundleName) == GetAssetSize(assetHandle) && !Utils.Contains(bundleName,updates);
+            bool isMainBundleDownloaded = IsBundleDependencyDownloaded(assetHandle);
+            if (!isMainBundleDownloaded)
+                return false;
+
+            string[] dependencies = AssetManifest.GetBundleDependencies(assetHandle);
+
+            for (int i = 0; i < dependencies.Length; i++)
+            {   
+                AssetHandle handle = new AssetHandle(dependencies[i],true);
+                if (!IsBundleDependencyDownloaded(handle))
+                    return false;
+            }
+            return true;
         }
+
+        
 
         internal static bool IsBundleAvailableInBuild(AssetHandle assetHandle) 
         {
-            return Utils.GetSizeOfDataFromStreamedStorage(assetHandle.BundleName) > 0;
+            bool isMainBundleAvailable = IsBundleDependencyAvailableInBuild(assetHandle);
+            if (!isMainBundleAvailable)
+                return false;
+
+            string[] dependencies = AssetManifest.GetBundleDependencies(assetHandle);
+
+            for (int i = 0; i < dependencies.Length; i++)
+            {
+                AssetHandle handle = new AssetHandle(dependencies[i],true);
+                if (!IsBundleDependencyAvailableInBuild(handle))
+                    return false;
+            }
+            return true;
         }
+        
+        
 
         internal static bool IsValidAddress(AssetHandle assetHandle)
         {
@@ -73,6 +95,21 @@ namespace YondaimeCDS
 
             return AssetManifest.GetBundleSize(assetHandle.BundleName);
         }
-        
+
+        internal static string[] GetAssetDependencies(AssetHandle assetHandle) 
+        { 
+            return AssetManifest.GetBundleDependencies(assetHandle);
+        }
+
+        private static bool IsBundleDependencyAvailableInBuild(AssetHandle assetHandle)
+        {
+            return Utils.GetSizeOfDataFromStreamedStorage(assetHandle.BundleName) > 0;
+        }
+
+        private static bool IsBundleDependencyDownloaded(AssetHandle assetHandle)
+        {
+            return Utils.GetSizeOfDataFromPersistantStorage(assetHandle.BundleName) == GetAssetSize(assetHandle) && !Utils.Contains(assetHandle.BundleName, ServerAssetList);
+        }
+
     }
 }

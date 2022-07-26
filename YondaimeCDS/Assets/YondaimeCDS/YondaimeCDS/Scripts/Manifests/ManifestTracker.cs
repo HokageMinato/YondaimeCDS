@@ -11,7 +11,7 @@ namespace YondaimeCDS {
 
 	    internal static SerializedAssetManifest LocalAssetManifest { get { if (_LOCAL_ASSET_MANIFEST == null) 
 					{
-					Debug.LogError("EMPTY MANIFEST ACCESS");
+					BundleSystem.Log("EMPTY MANIFEST ACCESS");
 					} return	_LOCAL_ASSET_MANIFEST; } }
 	    internal static ScriptManifest LocalScriptManifest { get { return _LOCAL_SCRIPT_MANIFEST; } }
 	    internal static HashManifest LocalHashManifest { get { return _LOCAL_HASH_MANIFEST; } }

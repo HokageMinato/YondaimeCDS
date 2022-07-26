@@ -55,7 +55,7 @@ namespace YondaimeCDS {
             {
                 if (!allScriptHashes.Contains(bundleScripts[i]))
                 {
-                    Debug.Log($"Script incompatibility detected for {serverBundleScriptData.BundleName}");
+                    BundleSystem.Log($"Script incompatibility detected for {serverBundleScriptData.BundleName}");
                     return false;
                 }
             }

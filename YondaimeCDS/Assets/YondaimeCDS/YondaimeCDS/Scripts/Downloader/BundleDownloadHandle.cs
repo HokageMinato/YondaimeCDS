@@ -35,7 +35,7 @@ namespace YondaimeCDS
 
                 while (!downloadRequest.isDone)
                 {
-                    await Task.Yield();
+                    await Task.Delay(64);
                 }
 
 
@@ -45,7 +45,7 @@ namespace YondaimeCDS
                 }
 
                 else
-                    Debug.Log(downloadRequest.error);
+                    BundleSystem.Log(downloadRequest.error);
 
                 return null;
             }
@@ -62,7 +62,7 @@ namespace YondaimeCDS
                 while (!downloadRequest.isDone)
                 {
                     _assetHandle.OnOperationProgressChanged?.Invoke(downloadRequest.downloadProgress);
-                    await Task.Yield();
+                    await Task.Delay(64);
                 }
 
                 if (downloadRequest.result == UnityWebRequest.Result.Success)
